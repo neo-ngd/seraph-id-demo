@@ -1,7 +1,7 @@
 // Copyright (c) 2019 Swisscom Blockchain AG
 // Licensed under MIT License
 
-import React from 'react';
+import React, { useContext } from 'react';
 import './Dashboard.css';
 
 import Owner from 'components/IdentityOwner/Owner';
@@ -13,24 +13,17 @@ import NavBar from 'components/NavBar/NavBar';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
 import UserTips from 'components/UserTips/UserTips';
+import { SeraphIDWallet } from '@sbc/seraph-id-sdk';
+import { GlobalContext } from 'containers/GlobalContext';
 
-
-interface Props {
-  ownerWallet: any
- }
-interface State { }
-
-export class Dashboard extends React.Component<Props, State> {
-
-  public render() {
-
+export function Dashboard() {
     return (
       <div className="DashboardContainer">
         <NavBar />
         <Grid container className="GridContainer" spacing={0}>
           <Grid item xs={12} sm={12} md={6} lg={6} xl={6} className="GridItem">
             <Paper className="OwnerAgentPaper">
-              <Owner ownerWallet={this.props.ownerWallet}/>
+              <Owner/>
             </Paper>
           </Grid>
 
@@ -53,8 +46,6 @@ export class Dashboard extends React.Component<Props, State> {
         <UserTips />
       </div>
     );
-  }
-
 }
 
 export default Dashboard;

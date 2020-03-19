@@ -1,7 +1,7 @@
 // Copyright (c) 2019 Swisscom Blockchain AG
 // Licensed under MIT License
 
-import React from 'react';
+import React, { useState, useContext } from 'react';
 import './GovernmentPage.css';
 import {
     AppBar, Toolbar, Typography, IconButton, TextField, Fab, Tooltip, CircularProgress,
@@ -20,37 +20,37 @@ import uuid from 'uuid/v1';
 // Import from seraph-id-sdk 
 import { SeraphIDIssuer } from '@sbc/seraph-id-sdk';
 import * as configs from 'configs';
+import { GlobalContext } from 'containers/GlobalContext';
+import { changeAction, nextTip } from 'containers/action';
 
 interface Props {
     isAdmin: boolean;
-    ownerWallet: any;
-}
-interface State {
-    secondName: { value: string, error: boolean, touched: boolean };
-    birthDate: { value: string, error: boolean, touched: boolean, helperText: string };
-    citizenship: { value: string, error: boolean, touched: boolean };
-    address: string;
-    gender: string;
 }
 
-export class GovernmentPage extends React.Component<Props, State> {
+export function GovernmentPage({isAdmin}: Props) {
+    const [secondName, setSecondName] = useState({ value: '', error: false, touched: false });
+    const [birthDate, setBirthDate] = useState({ value: '', error: false, touched: false, helperText: 'Format DD.MM.YYYY' });
+    const [citizenship, setCitizenship] = useState({ value: '', error: false, touched: false });
+    const [address, setAddress] = useState('');
+    const [gender, setGender] = useState('male');
+    const { state: { ownerWallet, actions }, dispatch } = useContext(GlobalContext);
 
-    public state: State = {
-        secondName: { value: '', error: false, touched: false },
-        birthDate: { value: '', error: false, touched: false, helperText: 'Format DD.MM.YYYY' },
-        citizenship: { value: '', error: false, touched: false },
-        address: '',
-        gender: 'male'
-    };
+    function _changeAction(agent: string, newContext: string) {
+        dispatch!(changeAction(agent, newContext));
+    }
 
-    handleSecondNameChange = (event: any) => {
+    function _nextTip(newTip: string) {
+        dispatch!(nextTip(newTip));
+    }
+
+    function handleSecondNameChange(event: any) {
         localStorage.setItem('secondName', event.target.value);
         const error = !event.target.value || event.target.value === '';
         const newSecondName = { value: event.target.value, error: error, touched: true };
-        this.setState({ secondName: newSecondName });
+        setSecondName(newSecondName);
     }
 
-    handleBirthDateChange = (event: any) => {
+    function handleBirthDateChange(event: any) {
         const inputValue = event.target.value;
         localStorage.setItem('birthDate', inputValue);
 
@@ -70,36 +70,36 @@ export class GovernmentPage extends React.Component<Props, State> {
         const error = !inputValue || inputValue === '' || !match || !isDateValid;
 
         const newBirthDate = { value: event.target.value, error: error, touched: true, helperText: helperText };
-        this.setState({ birthDate: newBirthDate });
+        setBirthDate(newBirthDate);
     }
 
-    handleCitizenshipChange = (event: any) => {
+    function handleCitizenshipChange(event: any) {
         localStorage.setItem('citizenship', event.target.value);
         const error = !event.target.value || event.target.value === '';
         const newCitizenship = { value: event.target.value, error: error, touched: true };
-        this.setState({ citizenship: newCitizenship });
+        setCitizenship(newCitizenship);
     }
 
-    handleAddressChange = (event: any) => {
+    function handleAddressChange(event: any) {
         localStorage.setItem('address', event.target.value);
-        this.setState({ address: event.target.value });
+        setAddress(event.target.value);
     }
 
 
-    handleGenderChange = (event: any) => {
+    function handleGenderChange(event: any){
         localStorage.setItem('gender', event.target.value);
-        this.setState({ gender: event.target.value });
+        setGender(event.target.value);
     }
 
-    getFormValidation = () => {
-        if (this.state.secondName.touched && this.state.birthDate.touched && this.state.citizenship.touched) {
-            return !(this.state.secondName.error || this.state.citizenship.error || this.state.birthDate.error);
+    function getFormValidation() {
+        if (secondName.touched && birthDate.touched && citizenship.touched) {
+            return !(secondName.error ||citizenship.error || birthDate.error);
         } else return false;
 
     }
 
-    renderContentForOwner = (value: any) => {
-        if (value.actions.govPageAsOwner === 'toFillForm') {
+    function renderContentForOwner() {
+        if (actions.govPageAsOwner === 'toFillForm') {
             return (
                 <div className="FormPageContainer">
                     <h1 className="PassportFormTitle"> Passport Request </h1>
@@ -121,9 +121,9 @@ export class GovernmentPage extends React.Component<Props, State> {
                                 required
                                 id="second-name"
                                 label="Second Name"
-                                value={this.state.secondName.value}
-                                error={this.state.secondName.error}
-                                onChange={(event) => this.handleSecondNameChange(event)}
+                                value={secondName.value}
+                                error={secondName.error}
+                                onChange={(event) => handleSecondNameChange(event)}
                             />
                         </div>
 
@@ -133,10 +133,10 @@ export class GovernmentPage extends React.Component<Props, State> {
                                 required
                                 id="date-of-birth"
                                 label="Date of birth"
-                                value={this.state.birthDate.value}
-                                error={this.state.birthDate.error}
-                                helperText={this.state.birthDate.helperText}
-                                onChange={(event) => this.handleBirthDateChange(event)}
+                                value={birthDate.value}
+                                error={birthDate.error}
+                                helperText={birthDate.helperText}
+                                onChange={(event) => handleBirthDateChange(event)}
                             />
                         </div>
 
@@ -147,9 +147,9 @@ export class GovernmentPage extends React.Component<Props, State> {
                                 required
                                 id="citizenship"
                                 label="Citizenship"
-                                value={this.state.citizenship.value}
-                                error={this.state.citizenship.error}
-                                onChange={(event) => this.handleCitizenshipChange(event)}
+                                value={citizenship.value}
+                                error={citizenship.error}
+                                onChange={(event) => handleCitizenshipChange(event)}
                             />
                         </div>
 
@@ -158,8 +158,8 @@ export class GovernmentPage extends React.Component<Props, State> {
                                 className="InputField"
                                 id="address"
                                 label="City"
-                                value={this.state.address}
-                                onChange={(event) => this.handleAddressChange(event)}
+                                value={address}
+                                onChange={(event) => handleAddressChange(event)}
                             />
                         </div>
 
@@ -169,8 +169,8 @@ export class GovernmentPage extends React.Component<Props, State> {
                             <RadioGroup
                                 aria-label="gender"
                                 name="gender"
-                                value={this.state.gender}
-                                onChange={(event) => this.handleGenderChange(event)}
+                                value={gender}
+                                onChange={(event) => handleGenderChange(event)}
                                 row
                             >
                                 <FormControlLabel
@@ -192,9 +192,9 @@ export class GovernmentPage extends React.Component<Props, State> {
 
                     </form>
 
-                    {this.getFormValidation() ? (
+                    {getFormValidation() ? (
                         <div className="GetCredentialsButton">
-                            <Fab onClick={() => this.getCredentials(value)} variant="extended" color="secondary"> Send Request </Fab>
+                            <Fab onClick={getCredentials} variant="extended" color="secondary"> Send Request </Fab>
                         </div>
                     ) : (
                             <div className="GetCredentialsButton">
@@ -205,26 +205,26 @@ export class GovernmentPage extends React.Component<Props, State> {
                 </div>
             );
 
-        } else if (value.actions.govPageAsOwner === 'askForCredentials') {
+        } else if (actions.govPageAsOwner === 'askForCredentials') {
             return (
                 <div className="PageContainer">
                     <h1> Requesting credentials </h1>
                     <CircularProgress color="secondary" />
                 </div>
             );
-        } else if (value.actions.govPageAsOwner === 'waitingForCredentials') {
+        } else if (actions.govPageAsOwner === 'waitingForCredentials') {
             return (
                 <div className="PageContainer">
                     <h1> Waiting for the Government to issue the digital Passport. </h1>
                 </div>
             );
-        } else if (value.actions.govPageAsOwner === 'success') {
+        } else if (actions.govPageAsOwner === 'success') {
             return (
                 <div className="PageContainer">
                     <h1> Credential successfully got from {Agents.government}.  </h1>
                 </div>
             );
-        } else if (value.actions.govPageAsOwner === 'failure') {
+        } else if (actions.govPageAsOwner === 'failure') {
             return (
                 <div className="PageContainer">
                     <h1> {Agents.government} denied to issue the digital Passport. It's not possible to book a flat. </h1>
@@ -234,7 +234,7 @@ export class GovernmentPage extends React.Component<Props, State> {
     }
 
 
-    renderContentForGovernment = (value: any) => {
+    function renderContentForGovernment() {
 
         const name = Agents.owner;
         const surname = localStorage.getItem('secondName');
@@ -244,13 +244,13 @@ export class GovernmentPage extends React.Component<Props, State> {
         const gender = localStorage.getItem('gender');
 
 
-        if (value.actions.govPageAsGov === 'noRequests') {
+        if (actions.govPageAsGov === 'noRequests') {
             return (
                 <div>
                     <PassportRequests />
                 </div>
             );
-        } else if (value.actions.govPageAsGov === 'pendingRequest') {
+        } else if (actions.govPageAsGov === 'pendingRequest') {
             const request = new PassportReq(
                 name ? name : '',
                 surname ? surname : '',
@@ -263,19 +263,19 @@ export class GovernmentPage extends React.Component<Props, State> {
                 <div>
                     <PassportRequests
                         activeRequest={request}
-                        denied={() => this.doNotIssueCredential(value)}
-                        issued={() => this.issueCredential(value, request)}
+                        denied={doNotIssueCredential}
+                        issued={() => issueCredential(request)}
                     />
                 </div>
             );
-        } else if (value.actions.govPageAsGov === 'issuing') {
+        } else if (actions.govPageAsGov === 'issuing') {
             return (
                 <div className="PageContainer">
                     <h1> Issuing Passport to {Agents.owner} </h1>
                     <CircularProgress color="secondary" />
                 </div>
             );
-        } else if (value.actions.govPageAsGov === 'credIssued') {
+        } else if (actions.govPageAsGov === 'credIssued') {
             const request = new PassportReq(
                 name ? name : '',
                 surname ? surname : '',
@@ -292,7 +292,7 @@ export class GovernmentPage extends React.Component<Props, State> {
             );
 
 
-        } else if (value.actions.govPageAsGov === 'credNotIssued') {
+        } else if (actions.govPageAsGov === 'credNotIssued') {
 
             const request = new PassportReq(
                 name ? name : '',
@@ -309,7 +309,7 @@ export class GovernmentPage extends React.Component<Props, State> {
                     activeRequest={request}
                 />
             );
-        } else if (value.actions.govPageAsGov === 'errorIssuingCred') {
+        } else if (actions.govPageAsGov === 'errorIssuingCred') {
 
             const request = new PassportReq(
                 name ? name : '',
@@ -329,33 +329,33 @@ export class GovernmentPage extends React.Component<Props, State> {
         }
     }
 
-    renderContent = (value: any, agent: string) => {
+    function renderContent(agent: string) {
         if (agent === Agents.owner) {
-            return this.renderContentForOwner(value);
+            return renderContentForOwner();
         } else {
-            return this.renderContentForGovernment(value);
+            return renderContentForGovernment();
         }
     }
 
 
-    getCredentials = (value: any) => {
+    function getCredentials(value: any) {
 
-        value.changeAction('govPageAsOwner', 'askForCredentials');
+        _changeAction('govPageAsOwner', 'askForCredentials');
 
         setTimeout(() => {
-            value.nextTip(`Play as ${Agents.government} to issue credentials to ${Agents.owner}`);
+            _nextTip(`Play as ${Agents.government} to issue credentials to ${Agents.owner}`);
 
-            value.changeAction('govPageAsOwner', 'waitingForCredentials');
-            value.changeAction('demoOwnerCredFromGov', 'waiting');
-            value.changeAction('demoGov', 'pendingRequest');
-            value.changeAction('govPageAsGov', 'pendingRequest');
+            _changeAction('govPageAsOwner', 'waitingForCredentials');
+            _changeAction('demoOwnerCredFromGov', 'waiting');
+            _changeAction('demoGov', 'pendingRequest');
+            _changeAction('govPageAsGov', 'pendingRequest');
 
         }, 3000);
     }
 
-    issueCredential = (value: any, request: PassportReq) => {
+    function issueCredential (request: PassportReq) {
 
-        value.changeAction('govPageAsGov', 'issuing');
+        _changeAction('govPageAsGov', 'issuing');
         const govIssuer = new SeraphIDIssuer(configs.GOVERNMENT_SCRIPT_HASH, configs.NEO_RPC_URL, configs.NEOSCAN_URL, configs.DID_NETWORK)
         const ownerDID = localStorage.getItem('ownerDID');
 
@@ -378,24 +378,24 @@ export class GovernmentPage extends React.Component<Props, State> {
                     console.log('issueClaimID RES', res.id);
 
                     try {
-                        this.props.ownerWallet.addClaim(res);
-                        const addedClaim = this.props.ownerWallet.getClaim(res.id);
+                        ownerWallet!.addClaim(res);
+                        const addedClaim = ownerWallet!.getClaim(res.id);
                         console.log('claim Added to the Wallet: ', addedClaim);
 
                         localStorage.setItem('passportClaimID', res.id);
                         localStorage.setItem('passportClaim', JSON.stringify(res));
 
-                        value.changeAction('agencyPageAsOwner', 'toChooseAFlat');
-                        value.nextTip(`Play as ${Agents.owner} and choose an accommodation from the ${Agents.smartAgency} Web Page.`);
+                        _changeAction('agencyPageAsOwner', 'toChooseAFlat');
+                        _nextTip(`Play as ${Agents.owner} and choose an accommodation from the ${Agents.smartAgency} Web Page.`);
 
-                        value.changeAction('govPageAsOwner', 'success');
-                        value.changeAction('demoOwnerCredFromGov', 'success');
-                        value.changeAction('demoGov', 'credIssued');
-                        value.changeAction('govPageAsGov', 'credIssued');
+                        _changeAction('govPageAsOwner', 'success');
+                        _changeAction('demoOwnerCredFromGov', 'success');
+                        _changeAction('demoGov', 'credIssued');
+                        _changeAction('govPageAsGov', 'credIssued');
                     }
                     catch (err) {
                         console.error('issueClaim ERR', err);
-                        this.handleCredIssuingError(value);
+                        handleCredIssuingError();
                     }
 
 
@@ -404,78 +404,68 @@ export class GovernmentPage extends React.Component<Props, State> {
             }
         ).catch(err => {
             console.error('issueClaim ERR', err);
-            this.handleCredIssuingError(value);
+            handleCredIssuingError();
         });
     }
 
-    handleCredIssuingError = (value: any) => {
-        value.changeAction('govPageAsGov', 'errorIssuingCred');
-        this.handleFailure(value);
+    function handleCredIssuingError() {
+        _changeAction('govPageAsGov', 'errorIssuingCred');
+        handleFailure();
 
     }
 
-    doNotIssueCredential = (value: any) => {
-        value.changeAction('govPageAsGov', 'credNotIssued');
-        this.handleFailure(value);
+    function doNotIssueCredential() {
+        _changeAction('govPageAsGov', 'credNotIssued');
+        handleFailure();
     }
 
-    handleFailure = (value: any) => {
-        value.nextTip(`${Agents.owner} can not book a flat without a valid digital Passport. Go back to the Help Page, click the reset button and try again!!!`);
+    function handleFailure() {
+        _nextTip(`${Agents.owner} can not book a flat without a valid digital Passport. Go back to the Help Page, click the reset button and try again!!!`);
 
-        value.changeAction('govPageAsOwner', 'failure');
-        value.changeAction('demoOwnerCredFromGov', 'failure');
-        value.changeAction('demoGov', 'credNotIssued');      
+        _changeAction('govPageAsOwner', 'failure');
+        _changeAction('demoOwnerCredFromGov', 'failure');
+        _changeAction('demoGov', 'credNotIssued');      
     }
 
-    public render() {
 
-        let agent = Agents.owner;
-        if (this.props.isAdmin) {
-            agent = Agents.government;
-        }
-
-        return (
-            <ApplicationContext.Consumer>
-                {(value: any) => (
-                    <span>
-                        <AppBar position="static" color="secondary">
-                            <Toolbar>
-                                <IconButton color="inherit" aria-label="Menu">
-                                    <AccountBalanceIcon className="GovernmentLogo" />
-                                </IconButton>
-                                <Typography variant="h6" color="inherit" className="NavBarTypography"> Government Web Page </Typography>
-
-                                <Tooltip title="Help">
-                                    <Link to="/help" className="HelpButton">
-                                        <IconButton color="inherit" aria-label="Menu">
-                                            <HelpIcon className="HelpIconBar" />
-                                        </IconButton>
-                                    </Link>
-                                </Tooltip>
-
-                                <Tooltip title="Close Government Web Page">
-                                    <Link to="/dashboard" className="CloseButton">
-                                        <IconButton color="inherit" aria-label="Close">
-                                            <CloseIcon />
-                                        </IconButton>
-                                    </Link>
-                                </Tooltip>
-                            </Toolbar>
-                        </AppBar>
-
-                        <div className="GovPageContainer">
-                            <ActiveAgent agent={agent} location="GovWebPage" />
-                            <UserTips location="GovWebPage" />
-                            <div className="GovPageContent">
-                                {this.renderContent(value, agent)}
-                            </div>
+    let agent = isAdmin? Agents.government : Agents.owner;
+    return (
+        <ApplicationContext.Consumer>
+            {(value: any) => (
+                <span>
+                    <AppBar position="static" color="secondary">
+                        <Toolbar>
+                            <IconButton color="inherit" aria-label="Menu">
+                                <AccountBalanceIcon className="GovernmentLogo" />
+                            </IconButton>
+                            <Typography variant="h6" color="inherit" className="NavBarTypography"> Government Web Page </Typography>
+                            <Tooltip title="Help">
+                                <Link to="/help" className="HelpButton">
+                                    <IconButton color="inherit" aria-label="Menu">
+                                        <HelpIcon className="HelpIconBar" />
+                                    </IconButton>
+                                </Link>
+                            </Tooltip>
+                            <Tooltip title="Close Government Web Page">
+                                <Link to="/dashboard" className="CloseButton">
+                                    <IconButton color="inherit" aria-label="Close">
+                                        <CloseIcon />
+                                    </IconButton>
+                                </Link>
+                            </Tooltip>
+                        </Toolbar>
+                    </AppBar>
+                    <div className="GovPageContainer">
+                        <ActiveAgent agent={agent} location="GovWebPage" />
+                        <UserTips location="GovWebPage" />
+                        <div className="GovPageContent">
+                            {renderContent(agent)}
                         </div>
-                    </span>
-                )}
-            </ApplicationContext.Consumer>
-
-        );
-    }
+                    </div>
+                </span>
+            )}
+        </ApplicationContext.Consumer>
+    );
 
 }
 

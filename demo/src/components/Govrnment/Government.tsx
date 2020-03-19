@@ -1,57 +1,42 @@
 // Copyright (c) 2019 Swisscom Blockchain AG
 // Licensed under MIT License
 
-import * as React from 'react';
+import React, { useState, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import { Fab, CardHeader, Avatar, IconButton, Tooltip, Dialog, DialogContent, DialogTitle } from '@material-ui/core';
 import AccountBalanceIcon from '@material-ui/icons/AccountBalance';
 import { ApplicationContext, Agents } from '../../application-context';
 import CodeIcon from '@material-ui/icons/Code';
 import SmartContractCode from 'components/SmartContract/SmartContractCode';
+import { GlobalContext } from 'containers/GlobalContext';
 
+export function Government() {
 
-interface Props { }
+    const [smartContractDialogOpen, setSmartContractDialogOpen] = useState<boolean>(false);
+    const { state: {actions, showHelp } } = useContext(GlobalContext);
 
-interface State {
-    smartContractDialogOpen: boolean; 
- }
+    const renderdemoGovContent = () => {
 
-
-export class Government extends React.Component<Props, State> {
-
-    public state: State = {
-        smartContractDialogOpen: false
-    }
-
-    renderdemoGovContent = (value: any) => {
-
-        if (value.actions.demoGov === 'noRequests') {
+        if (actions.demoGov === 'noRequests') {
             return (
                 <p> No credentials have been issued to {Agents.owner} yet. </p>
             );
-        } else if (value.actions.demoGov === 'pendingRequest') {
+        } else if (actions.demoGov === 'pendingRequest') {
             return (
                 <p> There is a pending request from {Agents.owner}. </p>
             );
-        } else if (value.actions.demoGov === 'credIssued') {
+        } else if (actions.demoGov === 'credIssued') {
             return (
                 <p> Digital Passport successfully issued to {Agents.owner}. </p>
             );
-        } else if (value.actions.demoGov === 'credNotIssued') {
+        } else if (actions.demoGov === 'credNotIssued') {
             return (
                 <p> Digital Passport request denied to {Agents.owner}. </p>
             );
         } else return null;
     }
 
-    handleDialog = (toOpen: boolean) => {
-        this.setState({ smartContractDialogOpen: toOpen });
-    }
-
-    render() {
         return (
-            <ApplicationContext.Consumer>
-                {(value: any) => (
                     <span>
                         <CardHeader
                             avatar={<Avatar aria-label="Recipe"> <AccountBalanceIcon className="AgentIcon" /> </Avatar>}
@@ -63,7 +48,7 @@ export class Government extends React.Component<Props, State> {
                                     <div className="AgentCardTitle">
                                         <div className="SmartContractButton">
                                             <Tooltip title="Show Issuer smart contract for Government">
-                                                <IconButton color="primary" aria-label="Menu" className="CodeButton" onClick={() => { this.handleDialog(true) }}>
+                                                <IconButton color="primary" aria-label="Menu" className="CodeButton" onClick={() => setSmartContractDialogOpen(false)}>
                                                     <CodeIcon />
                                                 </IconButton>
                                             </Tooltip>
@@ -75,23 +60,23 @@ export class Government extends React.Component<Props, State> {
                             className="AgentCardHeader"
                         />
                         <div className="AgentContainer">
-                            {this.renderdemoGovContent(value)}
-                            {value.actions.demoOwnerDID === 'success' ? (
+                            {renderdemoGovContent()}
+                            {actions.demoOwnerDID === 'success' ? (
                                 <Link to="/governmentAdmin" className="ButtonLink">
                                     <Fab variant="extended" color="primary"> Go To Government WebPage </Fab>
                                 </Link>
                             ) : (<Fab disabled variant="extended" > Go To Government WebPage </Fab>)
                             }
-                            {value.showHelp ? (
+                            {showHelp ? (
                                 <div style={{ textAlign: 'end' }}>
                                     <br />
                                     <hr />
-                                    <small> Status of Government: <strong> {value.actions.demoGov} </strong> </small>
+                                    <small> Status of Government: <strong> {actions.demoGov} </strong> </small>
                                 </div>
                             ) : null}
                         </div>
     
-                        <Dialog onClose={() => this.handleDialog(false)} open={this.state.smartContractDialogOpen} maxWidth="lg">
+                        <Dialog onClose={() => setSmartContractDialogOpen(false)} open={smartContractDialogOpen} maxWidth="lg">
                                 <DialogTitle> Code of Issuer Smart Contract for {Agents.government} </DialogTitle>
                                 <div>
                                     <DialogContent className="DialogContent DialogContentPadding">
@@ -108,11 +93,8 @@ export class Government extends React.Component<Props, State> {
                             </Dialog>
     
                     </span>
-                )}
-            </ApplicationContext.Consumer>
     
         );
-    }
 }
 
 export default Government;
