@@ -7,11 +7,7 @@ import { Snackbar } from '@material-ui/core';
 import InfoIcon from '@material-ui/icons/InfoOutlined';
 import { GlobalContext } from 'containers/GlobalContext';
 
-interface Props {
-    location?: string
-}
-
-export function UserTips({location}: Props) {
+export const UserTips = React.memo(() => {
     const [open, setOpen] = useState(true);
     const { state: {tip} } = useContext(GlobalContext);
     const handleClose = () => {
@@ -34,6 +30,6 @@ export function UserTips({location}: Props) {
                     }
                 />
     );
-}
+});
 
 export default UserTips;

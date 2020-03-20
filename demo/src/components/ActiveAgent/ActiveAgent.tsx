@@ -13,7 +13,7 @@ interface Props {
     location: string;
 }
 
-function ActiveAgent({ agent, location }: Props) {
+export const ActiveAgent = React.memo(({ agent, location }: Props) => {
 
     let highlightedText = theme.palette.error.main;
     if (location === "GovWebPage") {
@@ -35,6 +35,6 @@ function ActiveAgent({ agent, location }: Props) {
             </div>
         </div>
     );
-}
+});
 
 export default ActiveAgent;

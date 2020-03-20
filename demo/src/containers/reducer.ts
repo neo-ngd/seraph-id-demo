@@ -1,6 +1,6 @@
 import { SeraphIDWallet } from "@sbc/seraph-id-sdk";
 import { initialTip, initialActions } from "application-context";
-import { Reducer, createContext, useReducer } from "react";
+import { Reducer } from "react";
 
 export interface State {
   tip: string;

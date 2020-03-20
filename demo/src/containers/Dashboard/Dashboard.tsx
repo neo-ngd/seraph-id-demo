@@ -1,7 +1,7 @@
 // Copyright (c) 2019 Swisscom Blockchain AG
 // Licensed under MIT License
 
-import React, { useContext } from 'react';
+import React from 'react';
 import './Dashboard.css';
 
 import Owner from 'components/IdentityOwner/Owner';
@@ -13,10 +13,8 @@ import NavBar from 'components/NavBar/NavBar';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
 import UserTips from 'components/UserTips/UserTips';
-import { SeraphIDWallet } from '@sbc/seraph-id-sdk';
-import { GlobalContext } from 'containers/GlobalContext';
 
-export function Dashboard() {
+export const Dashboard = React.memo(function Dashboard() {
     return (
       <div className="DashboardContainer">
         <NavBar />
@@ -46,6 +44,6 @@ export function Dashboard() {
         <UserTips />
       </div>
     );
-}
+});
 
 export default Dashboard;

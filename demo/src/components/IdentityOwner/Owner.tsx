@@ -1,15 +1,15 @@
 // Copyright (c) 2019 Swisscom Blockchain AG
 // Licensed under MIT License
 
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import './Owner.css';
-import { Fab, CardHeader, Avatar, CircularProgress, Grid, Tooltip, IconButton, Dialog, DialogTitle, DialogContent } from '@material-ui/core';
-import AccountCircleIcon from '@material-ui/icons/AccountCircle';
+import { Fab, CircularProgress, Grid, Tooltip, IconButton, Dialog, DialogTitle, DialogContent } from '@material-ui/core';
 import { Agents } from '../../application-context';
 import SadFaceIcon from '@material-ui/icons/SentimentVeryDissatisfied';
 import HappyFaceIcon from '@material-ui/icons/SentimentVerySatisfied';
 import CodeIcon from '@material-ui/icons/Code';
+import Header from './OwnerHeader';
 
 // Import from seraph-id-sdk 
 import { DIDNetwork } from '@sbc/seraph-id-sdk';
@@ -20,15 +20,23 @@ const OWNER_GOV_BTN_LABEL = 'Apply for Passport';
 const OWNER_AGENCY_BTN_LABEL = 'Book a flat';
 const OWNER_DOOR_BTN_LABEL = 'Open the door';
 
-
-export function Owner() {
+export const Owner = React.memo(function () {
     const { state, dispatch } = useContext(GlobalContext);
-    const { ownerWallet, actions, showHelp } = state;
+    const { 
+        ownerWallet, 
+        actions: { 
+            demoOwnerDID, 
+            demoOwnerCredFromGov,
+            demoOwnerCredFromAgency,
+            demoOwnerOpenDoor        }, 
+        showHelp 
+    } = state;
     const [dialog, setDialog] = useState({
         open: false,
         title: '',
         content: ''
     })
+    const { open, title, content } = dialog;
 
     function _changeAction(agent: string, newContext: string) {
         dispatch!(changeAction(agent, newContext))
@@ -92,9 +100,28 @@ export function Owner() {
         }
     }
 
+    const DIDSection = useMemo(() => (
+        <Grid item className="OwnerGridItem">
+            {renderDIDSection()}
+        </Grid>
+    ), [demoOwnerDID])
+
+    const modalDialog = useMemo(() => (
+        <Dialog onClose={() => closeDialog()} open={open} >
+            <DialogTitle> {title} </DialogTitle>
+            <DialogContent className="DialogContent">
+                <div className="DialogCodeContainer">
+                    <code>
+                        {renderJSONObject(content)}
+                    </code>
+                </div>
+            </DialogContent>
+        </Dialog>
+    ), [open, content, title])
+
 
     function renderDIDSection() {
-        if (actions.demoOwnerDID === 'todo') {
+        if (demoOwnerDID === 'todo') {
             return (
                 <div>
                     <p> Generate your DID and create a wallet. </p>
@@ -103,14 +130,14 @@ export function Owner() {
                     </Fab>
                 </div>
             );
-        } else if (actions.demoOwnerDID === 'waiting') {
+        } else if (demoOwnerDID === 'waiting') {
             return (
                 <div>
                     <p> Waiting for DID generation.  </p>
                     <CircularProgress />
                 </div>
             );
-        } else if (actions.demoOwnerDID === 'success') {
+        } else if (demoOwnerDID === 'success') {
             return (
                 <div className="ShowCodeSection DIDSuccess">
                     <p> DID successfully generated. </p>
@@ -119,21 +146,9 @@ export function Owner() {
                             <CodeIcon />
                         </IconButton>
                     </Tooltip>
-                    <Dialog onClose={() => closeDialog()} open={dialog.open} >
-                        <DialogTitle> {dialog.title} </DialogTitle>
-                        <DialogContent className="DialogContent">
-
-                            <div className="DialogCodeContainer">
-                                <code>
-                                    {renderJSONObject(dialog.content)}
-                                </code>
-                            </div>
-
-                        </DialogContent>
-                    </Dialog>
                 </div>
             );
-        } else if (actions.demoOwnerDID === 'failure') {
+        } else if (demoOwnerDID === 'failure') {
             return (
                 <div>
                     <p> Error occurred generating the DID. </p>
@@ -144,9 +159,15 @@ export function Owner() {
 
     }
 
+    const credFromGovSection = useMemo(() => (
+        <Grid item className="OwnerGridItem">
+            {renderCredFromGovSection()}
+        </Grid>
+    ), [demoOwnerDID, demoOwnerCredFromGov]);
+
     function renderCredFromGovSection () {
 
-        if (actions.demoOwnerDID !== 'success') {
+        if (demoOwnerDID !== 'success') {
             return (
                 <div>
                     <p> Ask the {Agents.government} to issue a digital Passport. </p>
@@ -156,7 +177,7 @@ export function Owner() {
                 </div>
             );
         } else {
-            if (actions.demoOwnerCredFromGov === 'todo') {
+            if (demoOwnerCredFromGov === 'todo') {
                 return (
                     <div>
                         <p> Ask the {Agents.government} to issue a digital Passport. </p>
@@ -167,7 +188,7 @@ export function Owner() {
                         </Link>
                     </div>
                 );
-            } else if (actions.demoOwnerCredFromGov === 'waiting') {
+            } else if (demoOwnerCredFromGov === 'waiting') {
                 return (
                     <div>
                         <p> Waiting for the claim from the {Agents.government}. </p>
@@ -180,7 +201,7 @@ export function Owner() {
 
 
                 );
-            } else if (actions.demoOwnerCredFromGov === 'success') {
+            } else if (demoOwnerCredFromGov === 'success') {
                 return (
                     <div>
                         <div className="ShowCodeSection">
@@ -193,7 +214,7 @@ export function Owner() {
                         </div>
                     </div>
                 );
-            } else if (actions.demoOwnerCredFromGov === 'failure') {
+            } else if (demoOwnerCredFromGov === 'failure') {
                 return (
                     <div>
                         <p> Digital Passport not issued from the {Agents.government}. {Agents.owner} can not rent a flat.</p>
@@ -205,8 +226,14 @@ export function Owner() {
         }
     }
 
+    const credFromAgencySection = useMemo(() => (
+        <Grid item className="OwnerGridItem">
+            {renderCredFromAgencySection()}
+        </Grid>
+    ), [demoOwnerDID, demoOwnerCredFromAgency, demoOwnerCredFromGov])
+
     function renderCredFromAgencySection() {
-        if (actions.demoOwnerDID !== 'success') {
+        if (demoOwnerDID !== 'success') {
             return (
                 <div>
                     <p> Once you got the digital Passport from the Government, you can use the claim in the accomodation dApp to get another credential: the access key. </p>
@@ -216,8 +243,8 @@ export function Owner() {
                 </div>
             );
         } else {
-            if (actions.demoOwnerCredFromAgency === 'todo') {
-                if (actions.demoOwnerCredFromGov === 'success') {
+            if (demoOwnerCredFromAgency === 'todo') {
+                if (demoOwnerCredFromGov === 'success') {
                     return (
                         <div>
                             <p> Use the claim of digital Passport you just got and go to the accomodation dApp to get another credential: the access key. </p>
@@ -241,7 +268,7 @@ export function Owner() {
                     );
                 }
 
-            } else if (actions.demoOwnerCredFromAgency === 'waiting') {
+            } else if (demoOwnerCredFromAgency === 'waiting') {
                 return (
                     <div>
                         <p> Pending request to the {Agents.smartAgency}  </p>
@@ -252,7 +279,7 @@ export function Owner() {
                         </Link>
                     </div>
                 );
-            } else if (actions.demoOwnerCredFromAgency === 'success') {
+            } else if (demoOwnerCredFromAgency === 'success') {
                 return (
                     <div>
                         <div className="ShowCodeSection">
@@ -265,7 +292,7 @@ export function Owner() {
                         </div>
                     </div>
                 );
-            } else if (actions.demoOwnerCredFromAgency === 'failure') {
+            } else if (demoOwnerCredFromAgency === 'failure') {
                 return (
                     <div>
                         <p> Access key not issued from the {Agents.smartAgency}. {Agents.owner} can not rent a flat. </p>
@@ -276,10 +303,15 @@ export function Owner() {
         }
     }
 
+    const openDoorSection = useMemo(() => (
+        <Grid item className="OwnerGridItem">
+            {renderOpenDoorSection()}
+        </Grid>
+    ), [demoOwnerDID, demoOwnerOpenDoor, demoOwnerCredFromAgency])
 
     function renderOpenDoorSection() {
 
-        if (actions.demoOwnerDID !== 'success') {
+        if (demoOwnerDID !== 'success') {
             return (
                 <div>
                     <p> Use the access key provided from the Agency,
@@ -290,9 +322,9 @@ export function Owner() {
                 </div>
             );
         } else {
-            if (actions.demoOwnerOpenDoor === 'todo') {
+            if (demoOwnerOpenDoor === 'todo') {
 
-                if (actions.demoOwnerCredFromAgency === 'success') {
+                if (demoOwnerCredFromAgency === 'success') {
                     return (
                         <div>
                             <p> Use the access key you just got from the {Agents.smartAgency},
@@ -319,34 +351,34 @@ export function Owner() {
 
                 }
             }
-            else if (actions.demoOwnerOpenDoor === 'sharingCredentials') {
+            else if (demoOwnerOpenDoor === 'sharingCredentials') {
                 return (
                     <div>
                         <p> Sharing access key with the {Agents.landlord}. </p>
                         <CircularProgress />
                     </div>
                 );
-            } else if (actions.demoOwnerOpenDoor === 'sharingCredentialsFailed') {
+            } else if (demoOwnerOpenDoor === 'sharingCredentialsFailed') {
                 return (
                     <div>
                         <p> Sharing access key failed. {Agents.owner} can not access the flat. </p>
                         <SadFaceIcon className="ResultIcon" />
                     </div>
                 );
-            } else if (actions.demoOwnerOpenDoor === 'waiting') {
+            } else if (demoOwnerOpenDoor === 'waiting') {
                 return (
                     <div>
                         <p> Waiting for the {Agents.landlord} to validate the provided access key </p>
                     </div>
                 );
-            } else if (actions.demoOwnerOpenDoor === 'success') {
+            } else if (demoOwnerOpenDoor === 'success') {
                 return (
                     <div>
                         <p> Key validated. {Agents.owner} can now access the flat. </p>
                         <HappyFaceIcon className="ResultIcon" />
                     </div>
                 );
-            } else if (actions.demoOwnerOpenDoor === 'failure') {
+            } else if (demoOwnerOpenDoor === 'failure') {
                 return (
                     <div>
                         <p> Key validation failed. {Agents.owner} can not access the flat. </p>
@@ -426,58 +458,40 @@ export function Owner() {
         setDialog({...dialog,  open: false });
     }
 
-        return (
-                    <span>
-                        <CardHeader
-                            avatar={<Avatar aria-label="Recipe"> <AccountCircleIcon className="OwnerIcon" /> </Avatar>}
-                            title={<div className="AgentCardTitle"> <div> <h1> {Agents.owner} </h1> </div> <div> <h2> Identity Owner </h2> </div> </div>}
-                            className="AgentCardHeader"
-                        />
-
-                        <Grid container>
-                            <Grid item xs={12}>
-                                <Grid
-                                    container
-                                    alignItems="center"
-                                    spacing={0}
-                                    direction="column"
-                                    justify="space-between"
-                                    className="OwnerGridContainer"
-                                >
-                                    <Grid item className="OwnerGridItem">
-                                        {renderDIDSection()}
-                                    </Grid>
-
-                                    <Grid item className="OwnerGridItem">
-                                        {renderCredFromGovSection()}
-                                    </Grid>
-
-                                    <Grid item className="OwnerGridItem">
-                                        {renderCredFromAgencySection()}
-                                    </Grid>
-
-                                    <Grid item className="OwnerGridItem">
-                                        {renderOpenDoorSection()}
-                                    </Grid>
-
-                                    {showHelp ? (
-                                        <Grid item>
-                                            <div className="AgentStatusHelp">
-                                                <br />
-                                                <hr />
-                                                <small> Status of getting credentials from Gov: <strong> {actions.demoOwnerCredFromGov} </strong> </small>
-                                                <br />
-                                                <small> Status of getting credentials from the agency:  <strong>{actions.demoOwnerCredFromAgency} </strong> </small>
-                                                <br />
-                                                <small> Status of opening the door of the flat:  <strong> {actions.demoOwnerOpenDoor} </strong> </small>
-                                            </div>
-                                        </Grid>) : null}
-                                </Grid>
-                            </Grid>
-                        </Grid>
-
-                    </span>
-        );
-}
+    const GridBody = React.memo(() => (
+        <Grid
+            container
+            alignItems="center"
+            spacing={0}
+            direction="column"
+            justify="space-between"
+            className="OwnerGridContainer"
+        >
+            {DIDSection}
+            {credFromGovSection}
+            {credFromAgencySection}
+            {openDoorSection}
+            {showHelp ? (
+                <Grid item>
+                    <div className="AgentStatusHelp">
+                        <br />
+                        <hr />
+                        <small> Status of getting credentials from Gov: <strong> {demoOwnerCredFromGov} </strong> </small>
+                        <br />
+                        <small> Status of getting credentials from the agency:  <strong>{demoOwnerCredFromAgency} </strong> </small>
+                        <br />
+                        <small> Status of opening the door of the flat:  <strong> {demoOwnerOpenDoor} </strong> </small>
+                    </div>
+                </Grid>) : null}
+            {modalDialog}
+        </Grid>
+    ))
+    return (
+        <span>       
+            <Header></Header>
+            <GridBody></GridBody>
+        </span>
+    );
+});
 
 export default Owner;

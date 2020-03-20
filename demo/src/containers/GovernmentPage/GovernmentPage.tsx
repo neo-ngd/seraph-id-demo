@@ -1,19 +1,15 @@
 // Copyright (c) 2019 Swisscom Blockchain AG
 // Licensed under MIT License
 
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useMemo } from 'react';
 import './GovernmentPage.css';
 import {
-    AppBar, Toolbar, Typography, IconButton, TextField, Fab, Tooltip, CircularProgress,
+    TextField, Fab, CircularProgress,
     RadioGroup, Radio, FormControlLabel, FormControl
 } from '@material-ui/core';
-import { Link } from 'react-router-dom';
-import AccountBalanceIcon from '@material-ui/icons/AccountBalance';
 import ActiveAgent from 'components/ActiveAgent/ActiveAgent';
-import { Agents, ApplicationContext } from '../../application-context';
-import CloseIcon from '@material-ui/icons/Close';
+import { Agents } from '../../application-context';
 import UserTips from 'components/UserTips/UserTips';
-import HelpIcon from '@material-ui/icons/HelpOutline';
 import PassportRequests, { PassportReq, PassportStatus } from 'components/PassportRequests/PassportRequests';
 import uuid from 'uuid/v1';
 
@@ -22,12 +18,13 @@ import { SeraphIDIssuer } from '@sbc/seraph-id-sdk';
 import * as configs from 'configs';
 import { GlobalContext } from 'containers/GlobalContext';
 import { changeAction, nextTip } from 'containers/action';
+import { GovernmentBar } from './GovermentBar';
 
 interface Props {
     isAdmin: boolean;
 }
 
-export function GovernmentPage({isAdmin}: Props) {
+export const GovernmentPage = React.memo(({isAdmin}: Props) =>  {
     const [secondName, setSecondName] = useState({ value: '', error: false, touched: false });
     const [birthDate, setBirthDate] = useState({ value: '', error: false, touched: false, helperText: 'Format DD.MM.YYYY' });
     const [citizenship, setCitizenship] = useState({ value: '', error: false, touched: false });
@@ -98,98 +95,110 @@ export function GovernmentPage({isAdmin}: Props) {
 
     }
 
+    const FirstNameInput = React.memo(() => (
+        <div>
+            <TextField
+                className="InputField"
+                disabled
+                required
+                id="first-name"
+                label="First Name"
+                value={Agents.owner}
+            />
+        </div>
+    ))
+
+    const secondNameInput = useMemo(() => (
+        <div>
+            <TextField
+                className="InputField"
+                required
+                id="second-name"
+                label="Second Name"
+                value={secondName.value}
+                error={secondName.error}
+                onChange={(event) => handleSecondNameChange(event)}
+            />
+        </div>
+    ), [secondName]);
+
+    const citizenshipInput = useMemo(() => (
+        <div>
+            <TextField
+                className="InputField"
+                required
+                id="citizenship"
+                label="Citizenship"
+                value={citizenship.value}
+                error={citizenship.error}
+                onChange={(event) => handleCitizenshipChange(event)}
+            />
+        </div>
+    ), [citizenship]);
+
+    const birthDateInput = useMemo(() => (
+        <div>
+            <TextField
+                className="InputField"
+                required
+                id="date-of-birth"
+                label="Date of birth"
+                value={birthDate.value}
+                error={birthDate.error}
+                helperText={birthDate.helperText}
+                onChange={(event) => handleBirthDateChange(event)}
+            />
+        </div>
+    ), [birthDate]);
+
+    const cityInput = useMemo(() => (
+        <div>
+            <TextField
+                className="InputField"
+                id="address"
+                label="City"
+                value={address}
+                onChange={(event) => handleAddressChange(event)}
+            />
+        </div>
+    ), [address])
+
+    const genderInput = useMemo(() => (
+        <FormControl className="GenderRadioButton">
+            <p className="GenderRadioLabel"> Gender </p>
+            <RadioGroup
+                aria-label="gender"
+                name="gender"
+                value={gender}
+                onChange={(event) => handleGenderChange(event)}
+                row
+            >
+                <FormControlLabel
+                    value="female"
+                    control={<Radio color="secondary" />}
+                    label="Female"
+                />
+                <FormControlLabel
+                    value="male"
+                    control={<Radio color="secondary" />}
+                    label="Male"
+                />
+            </RadioGroup>
+        </FormControl>
+    ), [gender]);
+
     function renderContentForOwner() {
         if (actions.govPageAsOwner === 'toFillForm') {
             return (
                 <div className="FormPageContainer">
                     <h1 className="PassportFormTitle"> Passport Request </h1>
                     <form noValidate autoComplete="off" className="FormContainer">
-                        <div>
-                            <TextField
-                                className="InputField"
-                                disabled
-                                required
-                                id="first-name"
-                                label="First Name"
-                                value={Agents.owner}
-                            />
-                        </div>
-
-                        <div>
-                            <TextField
-                                className="InputField"
-                                required
-                                id="second-name"
-                                label="Second Name"
-                                value={secondName.value}
-                                error={secondName.error}
-                                onChange={(event) => handleSecondNameChange(event)}
-                            />
-                        </div>
-
-                        <div>
-                            <TextField
-                                className="InputField"
-                                required
-                                id="date-of-birth"
-                                label="Date of birth"
-                                value={birthDate.value}
-                                error={birthDate.error}
-                                helperText={birthDate.helperText}
-                                onChange={(event) => handleBirthDateChange(event)}
-                            />
-                        </div>
-
-
-                        <div>
-                            <TextField
-                                className="InputField"
-                                required
-                                id="citizenship"
-                                label="Citizenship"
-                                value={citizenship.value}
-                                error={citizenship.error}
-                                onChange={(event) => handleCitizenshipChange(event)}
-                            />
-                        </div>
-
-                        <div>
-                            <TextField
-                                className="InputField"
-                                id="address"
-                                label="City"
-                                value={address}
-                                onChange={(event) => handleAddressChange(event)}
-                            />
-                        </div>
-
-                        <FormControl className="GenderRadioButton">
-                            <p className="GenderRadioLabel"> Gender </p>
-
-                            <RadioGroup
-                                aria-label="gender"
-                                name="gender"
-                                value={gender}
-                                onChange={(event) => handleGenderChange(event)}
-                                row
-                            >
-                                <FormControlLabel
-                                    value="female"
-                                    control={<Radio color="secondary" />}
-                                    label="Female"
-                                />
-                                <FormControlLabel
-                                    value="male"
-                                    control={<Radio color="secondary" />}
-                                    label="Male"
-                                />
-                            </RadioGroup>
-
-                        </FormControl>
-
-
-
-
+                        <FirstNameInput></FirstNameInput>
+                        {secondNameInput}
+                        {birthDateInput}
+                        {citizenshipInput}
+                        {cityInput}
+                        {genderInput}
                     </form>
 
                     {getFormValidation() ? (
@@ -338,7 +347,7 @@ export function GovernmentPage({isAdmin}: Props) {
     }
 
 
-    function getCredentials(value: any) {
+    function getCredentials() {
 
         _changeAction('govPageAsOwner', 'askForCredentials');
 
@@ -430,43 +439,17 @@ export function GovernmentPage({isAdmin}: Props) {
 
     let agent = isAdmin? Agents.government : Agents.owner;
     return (
-        <ApplicationContext.Consumer>
-            {(value: any) => (
                 <span>
-                    <AppBar position="static" color="secondary">
-                        <Toolbar>
-                            <IconButton color="inherit" aria-label="Menu">
-                                <AccountBalanceIcon className="GovernmentLogo" />
-                            </IconButton>
-                            <Typography variant="h6" color="inherit" className="NavBarTypography"> Government Web Page </Typography>
-                            <Tooltip title="Help">
-                                <Link to="/help" className="HelpButton">
-                                    <IconButton color="inherit" aria-label="Menu">
-                                        <HelpIcon className="HelpIconBar" />
-                                    </IconButton>
-                                </Link>
-                            </Tooltip>
-                            <Tooltip title="Close Government Web Page">
-                                <Link to="/dashboard" className="CloseButton">
-                                    <IconButton color="inherit" aria-label="Close">
-                                        <CloseIcon />
-                                    </IconButton>
-                                </Link>
-                            </Tooltip>
-                        </Toolbar>
-                    </AppBar>
+                    <GovernmentBar></GovernmentBar>
                     <div className="GovPageContainer">
                         <ActiveAgent agent={agent} location="GovWebPage" />
-                        <UserTips location="GovWebPage" />
+                        <UserTips />
                         <div className="GovPageContent">
                             {renderContent(agent)}
                         </div>
                     </div>
                 </span>
-            )}
-        </ApplicationContext.Consumer>
     );
-
-}
+});
 
 export default GovernmentPage;
