@@ -40,7 +40,7 @@ export function AccommodationDapp({isAdmin}: Props) {
     const style = { backgroundColor: themeColor, color: 'white' };
     const spinnerStyle = { color: themeColor };
 
-    const { state: {ownerWallet, passportClaim, actions}, dispatch } = useContext(GlobalContext);
+    const { state: { data: {ownerWallet, passportClaim, actions}}, dispatch } = useContext(GlobalContext);
     
     function _changeAction(agent: string, newContext: string) {
         dispatch!(changeAction(agent, newContext));

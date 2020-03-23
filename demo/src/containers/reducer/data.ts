@@ -2,7 +2,7 @@ import { SeraphIDWallet } from "@sbc/seraph-id-sdk";
 import { initialTip, initialActions } from "application-context";
 import { Reducer } from "react";
 
-export interface State {
+export interface DataState {
   tip: string;
   showHelp: boolean;
   actions: any;
@@ -12,7 +12,7 @@ export interface State {
   ownerWallet?: SeraphIDWallet;
 }
 
-export const InitialState: State = {
+export const DataInitialState: DataState = {
   tip: initialTip,
   showHelp: false,
   actions: initialActions,
@@ -20,14 +20,14 @@ export const InitialState: State = {
   accessKeyClaim: null
 }
 
-export type ACTION_TYPE = 'CHANGE_ACTION' | 'NEXT_TIP' | 'RESET_CONTEXT';
+export type DATA_ACTION_TYPE = 'CHANGE_ACTION' | 'NEXT_TIP' | 'RESET_CONTEXT';
 
-export interface ACTION {
-  type: ACTION_TYPE;
+export interface DATA_ACTION {
+  type: DATA_ACTION_TYPE;
   payload?: any;
 }
 
-export function init(initialState: State) {
+export function init(initialState: DataState) {
   const ownerWallet = new SeraphIDWallet({ name: "ownerWallet" });
   const actions = initialActions;
   const actionEntries = Object.entries(actions);
@@ -53,7 +53,7 @@ export function init(initialState: State) {
   };
 }
 
-export const reducer: Reducer<State, ACTION> = function(prevState, action) {
+export const dataReducer: Reducer<DataState, DATA_ACTION> = function(prevState, action) {
   const { type, payload = {} } = action;
   switch(type) {
     case 'CHANGE_ACTION': {
@@ -76,14 +76,14 @@ export const reducer: Reducer<State, ACTION> = function(prevState, action) {
       }
     }
     case 'RESET_CONTEXT': {
-      localStorage.removeItem('gender');
+      localStorage.clear();
       return {
-        ...InitialState,
+        ...DataInitialState,
         ownerWallet: new SeraphIDWallet({ name: "ownerWallet" })
       }
     }
     default: 
-      throw new Error('Unkown Action Type');
+      return prevState
   }
 }
   

@@ -14,7 +14,7 @@ import Header from './OwnerHeader';
 // Import from seraph-id-sdk 
 import { DIDNetwork } from '@sbc/seraph-id-sdk';
 import { GlobalContext } from 'containers/GlobalContext';
-import { changeAction, nextTip } from 'containers/action';
+import { changeAction, nextTip, openDialog, closeDialog } from 'containers/action';
 
 const OWNER_GOV_BTN_LABEL = 'Apply for Passport';
 const OWNER_AGENCY_BTN_LABEL = 'Book a flat';
@@ -23,81 +23,38 @@ const OWNER_DOOR_BTN_LABEL = 'Open the door';
 export const Owner = React.memo(function () {
     const { state, dispatch } = useContext(GlobalContext);
     const { 
-        ownerWallet, 
-        actions: { 
-            demoOwnerDID, 
-            demoOwnerCredFromGov,
-            demoOwnerCredFromAgency,
-            demoOwnerOpenDoor        }, 
-        showHelp 
+        data: {
+            ownerWallet, 
+            actions: { 
+                demoOwnerDID, 
+                demoOwnerCredFromGov,
+                demoOwnerCredFromAgency,
+                demoOwnerOpenDoor        }, 
+            showHelp 
+        }
     } = state;
-    const [dialog, setDialog] = useState({
-        open: false,
-        title: '',
-        content: ''
-    })
-    const { open, title, content } = dialog;
 
     function _changeAction(agent: string, newContext: string) {
-        dispatch!(changeAction(agent, newContext))
+        dispatch(changeAction(agent, newContext))
     }
 
     function _nextTip(newTip: string) {
-        dispatch!(nextTip(newTip))
+        dispatch(nextTip(newTip))
     }
 
-    function renderJSONObject(objString: string) {
-        const jsonStart = "{";
-        const jsonEnd = "}"
-        const attributesStartIndex = objString.indexOf("attributes");
-        if (attributesStartIndex < 0) {
-            return <div> {jsonStart} {renderJSONLevel(objString)} {jsonEnd} </div>;
-        } else {
-            const fromAttrToEnd = objString.slice(attributesStartIndex + 12);
-            const closeAttrSectionIndex = fromAttrToEnd.indexOf('}');
-            const attributes = fromAttrToEnd.slice(0, closeAttrSectionIndex);
-            const others = fromAttrToEnd.slice(closeAttrSectionIndex + 1);
-
-            return (
-                <div>
-                    <p> {jsonStart} <br /> </p>
-                    <div className="JSONLevel">
-                        <p> "attributes": {jsonStart} <br />  </p>
-                        <div className="JSONLevel">
-                            {renderJSONLevel(attributes)}
-                        </div>
-                        <p> {jsonEnd}, <br /> </p>
-                        {renderJSONLevel(others)}
-                    </div>
-                    <p> {jsonEnd} <br /> </p>
-
-                </div>
-            );
+    function _openDialog(type: string) {
+        if (type === 'DID') {
+            const ownerDID = '{' + localStorage.getItem('ownerDID') + '}';
+            const title = `${Agents.owner}'s DID`;
+            dispatch(openDialog(ownerDID, title));
+        } else if (type === 'gov') {
+            const passportClaim = '' + localStorage.getItem('passportClaim');
+            dispatch(openDialog(passportClaim, 'Claim: Digital Passport'));
+        } else if (type === 'agency') {
+            const accessKeyClaim = '' + localStorage.getItem('accessKeyClaim');
+            dispatch(openDialog(accessKeyClaim, 'Claim: Access key'));
         }
-    }
 
-    function renderJSONLevel(objString: string) {
-
-        if (objString) {
-            const l = objString.length;
-            const step0 = objString.substring(1, l - 1);
-            const step1 = step0.split(",");
-            const res = step1.map((field, index) => {
-                if (index === step1.length - 1) {
-                    return <p key={index}> {field} <br />  </p>
-                } else {
-                    return <p key={index}> {field}, <br />  </p>
-                }
-            });
-            return (
-                <div> {res} </div>
-            );
-
-        } else {
-            return (
-                <div> Not available </div>
-            );
-        }
     }
 
     const DIDSection = useMemo(() => (
@@ -105,20 +62,6 @@ export const Owner = React.memo(function () {
             {renderDIDSection()}
         </Grid>
     ), [demoOwnerDID])
-
-    const modalDialog = useMemo(() => (
-        <Dialog onClose={() => closeDialog()} open={open} >
-            <DialogTitle> {title} </DialogTitle>
-            <DialogContent className="DialogContent">
-                <div className="DialogCodeContainer">
-                    <code>
-                        {renderJSONObject(content)}
-                    </code>
-                </div>
-            </DialogContent>
-        </Dialog>
-    ), [open, content, title])
-
 
     function renderDIDSection() {
         if (demoOwnerDID === 'todo') {
@@ -142,7 +85,7 @@ export const Owner = React.memo(function () {
                 <div className="ShowCodeSection DIDSuccess">
                     <p> DID successfully generated. </p>
                     <Tooltip title="Show DID code">
-                        <IconButton color="primary" aria-label="Menu" className="CodeButton" onClick={() => { openDialog('DID') }} >
+                        <IconButton color="primary" aria-label="Menu" className="CodeButton" onClick={() => { _openDialog('DID') }} >
                             <CodeIcon />
                         </IconButton>
                     </Tooltip>
@@ -207,7 +150,7 @@ export const Owner = React.memo(function () {
                         <div className="ShowCodeSection">
                             <p> Claim successfully got from the {Agents.government}. </p>
                             <Tooltip title="Show claim">
-                                <IconButton color="primary" aria-label="Menu" className="CodeButton" onClick={() => { openDialog('gov') }}>
+                                <IconButton color="primary" aria-label="Menu" className="CodeButton" onClick={() => { _openDialog('gov') }}>
                                     <CodeIcon />
                                 </IconButton>
                             </Tooltip>
@@ -285,7 +228,7 @@ export const Owner = React.memo(function () {
                         <div className="ShowCodeSection">
                             <p> Claim successfully got from the {Agents.smartAgency}. </p>
                             <Tooltip title="Show claim">
-                                <IconButton color="primary" aria-label="Menu" className="CodeButton" onClick={() => { openDialog('agency') }}>
+                                <IconButton color="primary" aria-label="Menu" className="CodeButton" onClick={() => { _openDialog('agency') }}>
                                     <CodeIcon />
                                 </IconButton>
                             </Tooltip>
@@ -439,25 +382,6 @@ export const Owner = React.memo(function () {
 
     }
 
-    function openDialog(type: string) {
-        if (type === 'DID') {
-            const ownerDID = '{' + localStorage.getItem('ownerDID') + '}';
-            const title = `${Agents.owner}'s DID`;
-            setDialog({ title, content: ownerDID, open: true });
-        } else if (type === 'gov') {
-            const passportClaim = '' + localStorage.getItem('passportClaim');
-            setDialog({ title: 'Claim: Digital Passport', content: passportClaim, open: true });
-        } else if (type === 'agency') {
-            const accessKeyClaim = '' + localStorage.getItem('accessKeyClaim');
-            setDialog({ title: 'Claim: Access key', content: accessKeyClaim, open: true });
-        }
-
-    }
-
-    function closeDialog(){
-        setDialog({...dialog,  open: false });
-    }
-
     const GridBody = React.memo(() => (
         <Grid
             container
@@ -483,7 +407,6 @@ export const Owner = React.memo(function () {
                         <small> Status of opening the door of the flat:  <strong> {demoOwnerOpenDoor} </strong> </small>
                     </div>
                 </Grid>) : null}
-            {modalDialog}
         </Grid>
     ))
     return (

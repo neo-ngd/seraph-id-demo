@@ -1,17 +1,4 @@
-// Copyright (c) 2019 Swisscom Blockchain AG
-// Licensed under MIT License
-
-import * as React from 'react';
-
-interface Props {
-    issuer: string;
-}
-
-function SmartContractCode({ issuer }: Props) {
-
-    let code = 'Not Available. ';
-    if (issuer === 'government') {
-        code =
+export const GOVERNMENT_CODE =
             `
 /// <note>
 /// The private keys for the issuer corresponds to wallet2.json
@@ -206,8 +193,7 @@ namespace SeraphID
     }
 }
             `;
-    } else if (issuer === 'agency') {
-        code = `
+export const AGENCY_CODE = `
 /// <note>
 /// The private keys for the issuer corresponds to wallet3.json
 /// </note>
@@ -402,16 +388,3 @@ namespace SeraphID
 }
 
         `;
-    }
-
-    return (
-        <pre>
-            <code>
-                {code}
-            </code>
-        </pre>
-
-    );
-}
-
-export default SmartContractCode;

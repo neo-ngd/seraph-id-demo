@@ -1,4 +1,9 @@
-import { ACTION } from "./reducer"
+import { DATA_ACTION_TYPE, DIALOG_ACTION_TYPE } from "./reducer"
+
+export interface ACTION {
+   type:  DATA_ACTION_TYPE | DIALOG_ACTION_TYPE;
+   payload?: any;
+}
 
 export function changeAction(agent: string, newContext: string): ACTION {
     return {
@@ -16,5 +21,21 @@ export function nextTip(newTip: string): ACTION {
         payload: {
             newTip
         }
+    }
+}
+
+export function openDialog(code: string, title: string): ACTION {
+    return {
+        type: 'OPEN',
+        payload: {
+            code,
+            title
+        }
+    }
+}
+
+export function closeDialog(): ACTION {
+    return {
+        type: 'CLOSE'
     }
 }

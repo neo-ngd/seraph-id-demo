@@ -9,7 +9,7 @@ import { GlobalContext } from 'containers/GlobalContext';
 
 export const UserTips = React.memo(() => {
     const [open, setOpen] = useState(true);
-    const { state: {tip} } = useContext(GlobalContext);
+    const { state: { data: { tip }} } = useContext(GlobalContext);
     const handleClose = () => {
         setOpen(false);
     }

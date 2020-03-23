@@ -1,7 +1,7 @@
 // Copyright (c) 2019 Swisscom Blockchain AG
 // Licensed under MIT License
 
-import React, { useState, useContext, useMemo } from 'react';
+import React, { useState, useContext, useMemo, useCallback, useEffect } from 'react';
 import './GovernmentPage.css';
 import {
     TextField, Fab, CircularProgress,
@@ -30,7 +30,8 @@ export const GovernmentPage = React.memo(({isAdmin}: Props) =>  {
     const [citizenship, setCitizenship] = useState({ value: '', error: false, touched: false });
     const [address, setAddress] = useState('');
     const [gender, setGender] = useState('male');
-    const { state: { ownerWallet, actions }, dispatch } = useContext(GlobalContext);
+    const [formValidate, setFormValidate] = useState(false);
+    const { state: { data: { ownerWallet, actions }}, dispatch } = useContext(GlobalContext);
 
     function _changeAction(agent: string, newContext: string) {
         dispatch!(changeAction(agent, newContext));
@@ -92,8 +93,15 @@ export const GovernmentPage = React.memo(({isAdmin}: Props) =>  {
         if (secondName.touched && birthDate.touched && citizenship.touched) {
             return !(secondName.error ||citizenship.error || birthDate.error);
         } else return false;
-
     }
+
+    function validateForm() {
+        if (formValidate !== getFormValidation()) {
+            setFormValidate(!formValidate);
+        }
+    }
+
+    useEffect(validateForm);
 
     const FirstNameInput = React.memo(() => (
         <div>
@@ -187,6 +195,19 @@ export const GovernmentPage = React.memo(({isAdmin}: Props) =>  {
         </FormControl>
     ), [gender]);
 
+    const submitButton = useMemo(() => (
+        <div className="GetCredentialsButton">
+            <Fab 
+                onClick={getCredentials} 
+                variant="extended" 
+                color= "secondary" 
+                disabled={!formValidate}
+            > 
+                Send Request 
+            </Fab>
+        </div>
+    ), [formValidate])
+
     function renderContentForOwner() {
         if (actions.govPageAsOwner === 'toFillForm') {
             return (
@@ -200,17 +221,7 @@ export const GovernmentPage = React.memo(({isAdmin}: Props) =>  {
                         {cityInput}
                         {genderInput}
                     </form>
-
-                    {getFormValidation() ? (
-                        <div className="GetCredentialsButton">
-                            <Fab onClick={getCredentials} variant="extended" color="secondary"> Send Request </Fab>
-                        </div>
-                    ) : (
-                            <div className="GetCredentialsButton">
-                                <Fab disabled variant="extended"> Send Request </Fab>
-                            </div>
-
-                        )}
+                    {submitButton}
                 </div>
             );
 

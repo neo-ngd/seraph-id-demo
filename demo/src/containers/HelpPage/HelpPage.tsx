@@ -22,13 +22,11 @@ function HelpPage({ help }: Props) {
     const [reseted, setReseted] = useState(false);
 
     const onResetClicked = () => {
-        console.log(reseted)
         if (reseted) {
             return;
         }
-        console.log('hi')
         setReseted(true);
-        dispatch!({
+        dispatch({
             type: 'RESET_CONTEXT'
         });
     }

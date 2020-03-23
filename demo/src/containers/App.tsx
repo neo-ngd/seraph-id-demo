@@ -11,6 +11,7 @@ import HelpPage from './HelpPage/HelpPage';
 import GovernmentPage from './GovernmentPage/GovernmentPage';
 import AccommodationDapp from './AccommodationDapp/AccommodationDapp';
 import { Global } from './GlobalContext';
+import { CodeDialog } from 'components/Dialog/CodeDialog';
 
 
 export function App() {
@@ -29,6 +30,7 @@ export function App() {
           </Switch>
         </MuiThemeProvider>
       </BrowserRouter>
+      <CodeDialog></CodeDialog>
     </Global>
   );
 }
