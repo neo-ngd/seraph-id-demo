@@ -1,40 +1,53 @@
 // Copyright (c) 2019 Swisscom Blockchain AG
 // Licensed under MIT License
 
-import React from 'react';
+import React, {useEffect, useContext} from 'react';
 import './App.css';
 import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles';
-import { BrowserRouter, Switch, Route } from 'react-router-dom';
+import { BrowserRouter, Switch, Route, withRouter } from 'react-router-dom';
 
 import Dashboard from './Dashboard/Dashboard';
 import HelpPage from './HelpPage/HelpPage';
 import GovernmentPage from './GovernmentPage/GovernmentPage';
 import AccommodationDapp from './AccommodationDapp/AccommodationDapp';
-import { Global } from './GlobalContext';
+import { Global, GlobalContext } from './GlobalContext';
 import { CodeDialog } from 'components/Dialog/CodeDialog';
+import { UserTips } from 'components/UserTips/UserTips';
 
+export const RouterComponent = withRouter(({history}) => {
+  const { dispatch } = useContext(GlobalContext);
+  history.listen((location, action) => {
+    dispatch({
+      type: 'SHOW_TIP'
+    })
+  })
 
-export function App() {
+  return (
+    <Switch>
+      <Route path="/" exact render={() => <HelpPage help={false}/>}/>
+      <Route path="/help" exact render={() => <HelpPage help={true} />} />
+      <Route path="/dashboard" exact render={() => <Dashboard />} />
+      <Route path="/government" exact render={() => <GovernmentPage isAdmin={false} />} />
+      <Route path="/governmentAdmin" exact render={() => <GovernmentPage isAdmin={true} />} />
+      <Route path="/accommodation" exact render={() => <AccommodationDapp isAdmin={false} />} />
+      <Route path="/accommodationAdmin" exact render={() => <AccommodationDapp isAdmin={true} />} />
+    </Switch>
+  )
+});
+
+export const App = () => {
   return (
     <Global>
       <BrowserRouter>
         <MuiThemeProvider theme={theme}>
-          <Switch>
-            <Route path="/" exact render={() => <HelpPage help={false}/>} />
-            <Route path="/help" exact render={() => <HelpPage help={true} />} />
-            <Route path="/dashboard" exact render={() => <Dashboard />} />
-            <Route path="/government" exact render={() => <GovernmentPage isAdmin={false} />} />
-            <Route path="/governmentAdmin" exact render={() => <GovernmentPage isAdmin={true} />} />
-            <Route path="/accommodation" exact render={() => <AccommodationDapp isAdmin={false} />} />
-            <Route path="/accommodationAdmin" exact render={() => <AccommodationDapp isAdmin={true} />} />
-          </Switch>
+          <RouterComponent></RouterComponent>
+          <UserTips />
+          <CodeDialog></CodeDialog>
         </MuiThemeProvider>
       </BrowserRouter>
-      <CodeDialog></CodeDialog>
     </Global>
   );
 }
-
 
 export default App;
 

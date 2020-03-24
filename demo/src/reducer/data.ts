@@ -4,6 +4,7 @@ import { Reducer } from "react";
 
 export interface DataState {
   tip: string;
+  showTip: boolean;
   showHelp: boolean;
   actions: any;
   passportClaim: any;
@@ -14,13 +15,14 @@ export interface DataState {
 
 export const DataInitialState: DataState = {
   tip: initialTip,
+  showTip: true,
   showHelp: false,
   actions: initialActions,
   passportClaim: null,
   accessKeyClaim: null
 }
 
-export type DATA_ACTION_TYPE = 'CHANGE_ACTION' | 'NEXT_TIP' | 'RESET_CONTEXT';
+export type DATA_ACTION_TYPE = 'CHANGE_ACTION' | 'NEXT_TIP' | 'RESET_CONTEXT' | 'SHOW_TIP' | 'CLOSE_TIP';
 
 export interface DATA_ACTION {
   type: DATA_ACTION_TYPE;
@@ -72,7 +74,8 @@ export const dataReducer: Reducer<DataState, DATA_ACTION> = function(prevState, 
       localStorage.setItem('tip', newTip);
       return {
         ...prevState,
-        tip: newTip
+        tip: newTip,
+        showTip: true
       }
     }
     case 'RESET_CONTEXT': {
@@ -80,6 +83,18 @@ export const dataReducer: Reducer<DataState, DATA_ACTION> = function(prevState, 
       return {
         ...DataInitialState,
         ownerWallet: new SeraphIDWallet({ name: "ownerWallet" })
+      }
+    }
+    case 'CLOSE_TIP': {
+      return {
+        ...prevState,
+        showTip: false
+      }
+    }
+    case 'SHOW_TIP': {
+      return {
+        ...prevState,
+        showTip: true
       }
     }
     default: 

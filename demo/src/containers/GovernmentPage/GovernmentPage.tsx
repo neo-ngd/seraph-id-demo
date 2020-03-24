@@ -447,7 +447,6 @@ export const GovernmentPage = React.memo(({isAdmin}: Props) =>  {
                     <GovernmentBar></GovernmentBar>
                     <div className="GovPageContainer">
                         <ActiveAgent agent={agent} location="GovWebPage" />
-                        <UserTips />
                         <div className="GovPageContent">
                             {renderContent(agent)}
                         </div>

@@ -433,7 +433,6 @@ export function AccommodationDapp({isAdmin}: Props) {
 
                         <div className="AgencyPageContainer">
                             <ActiveAgent agent={agent} location="AgencyWebPage" />
-                            <UserTips/>
                             <div className="AgencyPageContent">
                                 {renderContent(agent)}
                             </div>

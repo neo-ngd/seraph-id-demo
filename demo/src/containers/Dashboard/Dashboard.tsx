@@ -41,7 +41,6 @@ export const Dashboard = React.memo(function Dashboard() {
 
           </Grid>
         </Grid>
-        <UserTips />
       </div>
     );
 });

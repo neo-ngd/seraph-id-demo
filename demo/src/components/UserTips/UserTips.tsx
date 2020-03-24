@@ -8,10 +8,11 @@ import InfoIcon from '@material-ui/icons/InfoOutlined';
 import { GlobalContext } from 'containers/GlobalContext';
 
 export const UserTips = React.memo(() => {
-    const [open, setOpen] = useState(true);
-    const { state: { data: { tip }} } = useContext(GlobalContext);
+    const { state: { data: { tip, showTip }}, dispatch } = useContext(GlobalContext);
     const handleClose = () => {
-        setOpen(false);
+        dispatch({
+            type: 'CLOSE_TIP'
+        })
     }
     return (
                 <Snackbar
@@ -20,7 +21,7 @@ export const UserTips = React.memo(() => {
                         vertical: 'bottom',
                         horizontal: 'center',
                     }}
-                    open={open}
+                    open={showTip}
                     message={
                         <span
                             className="UserTipContent">

@@ -1,4 +1,4 @@
-import { useReducer, Dispatch, useContext } from 'react';
+import { useReducer, Dispatch, useContext, useEffect } from 'react';
 import { GlobalContext } from './GlobalContext';
 import { changeAction, nextTip } from './action';
 
