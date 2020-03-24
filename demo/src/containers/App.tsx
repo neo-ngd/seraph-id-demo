@@ -1,7 +1,7 @@
 // Copyright (c) 2019 Swisscom Blockchain AG
 // Licensed under MIT License
 
-import React, {useEffect, useContext} from 'react';
+import React, {useContext} from 'react';
 import './App.css';
 import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles';
 import { BrowserRouter, Switch, Route, withRouter } from 'react-router-dom';
@@ -13,25 +13,37 @@ import AccommodationDapp from './AccommodationDapp/AccommodationDapp';
 import { Global, GlobalContext } from './GlobalContext';
 import { CodeDialog } from 'components/Dialog/CodeDialog';
 import { UserTips } from 'components/UserTips/UserTips';
+import { TransitionGroup, CSSTransition } from 'react-transition-group';
+import { useLocation } from 'react-router';
 
 export const RouterComponent = withRouter(({history}) => {
   const { dispatch } = useContext(GlobalContext);
-  history.listen((location, action) => {
+  history.listen(() => {
     dispatch({
       type: 'SHOW_TIP'
     })
   })
 
+  let location = useLocation();
+
   return (
-    <Switch>
-      <Route path="/" exact render={() => <HelpPage help={false}/>}/>
-      <Route path="/help" exact render={() => <HelpPage help={true} />} />
-      <Route path="/dashboard" exact render={() => <Dashboard />} />
-      <Route path="/government" exact render={() => <GovernmentPage isAdmin={false} />} />
-      <Route path="/governmentAdmin" exact render={() => <GovernmentPage isAdmin={true} />} />
-      <Route path="/accommodation" exact render={() => <AccommodationDapp isAdmin={false} />} />
-      <Route path="/accommodationAdmin" exact render={() => <AccommodationDapp isAdmin={true} />} />
-    </Switch>
+    <TransitionGroup>
+      <CSSTransition
+        key={location.key}
+        classNames="fade"
+        timeout={500}
+      >
+        <Switch location={location}>
+          <Route path="/" exact render={() => <HelpPage help={false}/>}/>
+          <Route path="/help" exact render={() => <HelpPage help={true} />} />
+          <Route path="/dashboard" exact render={() => <Dashboard />} />
+          <Route path="/government" exact render={() => <GovernmentPage isAdmin={false} />} />
+          <Route path="/governmentAdmin" exact render={() => <GovernmentPage isAdmin={true} />} />
+          <Route path="/accommodation" exact render={() => <AccommodationDapp isAdmin={false} />} />
+          <Route path="/accommodationAdmin" exact render={() => <AccommodationDapp isAdmin={true} />} />
+        </Switch>
+      </CSSTransition>
+    </TransitionGroup>
   )
 });
 
