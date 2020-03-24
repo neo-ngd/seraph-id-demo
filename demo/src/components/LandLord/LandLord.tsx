@@ -11,19 +11,12 @@ import { SeraphIDVerifier } from '@sbc/seraph-id-sdk';
 import * as configs from 'configs';
 import { useContext } from 'react';
 import { GlobalContext } from 'containers/GlobalContext';
-import { changeAction, nextTip } from 'containers/action';
+import { useStepActions } from 'containers/hooks';
 
 
 function LandLord() {
-    const { state: { data: {actions: {demoLandlord }, showHelp, accessKeyClaim}}, dispatch} = useContext(GlobalContext);
-
-    function _changeAction(agent: string, newContext: string) {
-        dispatch(changeAction(agent, newContext))
-    }
-
-    function _nextTip(newTip: string) {
-        dispatch(nextTip(newTip))
-    }
+    const { state: { data: {actions: {demoLandlord }, showHelp, accessKeyClaim}}} = useContext(GlobalContext);
+    const { _changeAction, _nextTip } = useStepActions();
 
     const renderdemoLandlordContent = React.useMemo(() => {
 

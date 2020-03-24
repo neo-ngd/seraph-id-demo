@@ -23,12 +23,7 @@ import { SeraphIDIssuer, SeraphIDVerifier } from '@sbc/seraph-id-sdk';
 import * as configs from 'configs';
 import { GlobalContext } from 'containers/GlobalContext';
 import { changeAction, nextTip } from 'containers/action';
-
-
-interface Flat {
-    city: string;
-    price: string;
-}
+import { useStepActions } from 'containers/hooks';
 
 interface Props {
     isAdmin: boolean;
@@ -40,15 +35,8 @@ export function AccommodationDapp({isAdmin}: Props) {
     const style = { backgroundColor: themeColor, color: 'white' };
     const spinnerStyle = { color: themeColor };
 
-    const { state: { data: {ownerWallet, passportClaim, actions}}, dispatch } = useContext(GlobalContext);
-    
-    function _changeAction(agent: string, newContext: string) {
-        dispatch!(changeAction(agent, newContext));
-    }
-
-    function _nextTip(newTip: string) {
-        dispatch!(nextTip(newTip));
-    }
+    const { state: { data: {ownerWallet, passportClaim, actions}} } = useContext(GlobalContext);
+    const { _changeAction, _nextTip } = useStepActions();
 
 
     function verifyDigitalIdentity() {

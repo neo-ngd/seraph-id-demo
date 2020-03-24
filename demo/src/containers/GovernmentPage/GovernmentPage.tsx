@@ -17,8 +17,8 @@ import uuid from 'uuid/v1';
 import { SeraphIDIssuer } from '@sbc/seraph-id-sdk';
 import * as configs from 'configs';
 import { GlobalContext } from 'containers/GlobalContext';
-import { changeAction, nextTip } from 'containers/action';
 import { GovernmentBar } from './GovermentBar';
+import { useStepActions } from 'containers/hooks';
 
 interface Props {
     isAdmin: boolean;
@@ -31,15 +31,8 @@ export const GovernmentPage = React.memo(({isAdmin}: Props) =>  {
     const [address, setAddress] = useState('');
     const [gender, setGender] = useState('male');
     const [formValidate, setFormValidate] = useState(false);
-    const { state: { data: { ownerWallet, actions }}, dispatch } = useContext(GlobalContext);
-
-    function _changeAction(agent: string, newContext: string) {
-        dispatch!(changeAction(agent, newContext));
-    }
-
-    function _nextTip(newTip: string) {
-        dispatch!(nextTip(newTip));
-    }
+    const { state: { data: { ownerWallet, actions }} } = useContext(GlobalContext);
+    const { _changeAction, _nextTip } = useStepActions();
 
     function handleSecondNameChange(event: any) {
         localStorage.setItem('secondName', event.target.value);

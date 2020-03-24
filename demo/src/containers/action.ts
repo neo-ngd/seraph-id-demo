@@ -1,4 +1,4 @@
-import { DATA_ACTION_TYPE, DIALOG_ACTION_TYPE } from "./reducer"
+import { DATA_ACTION_TYPE, DIALOG_ACTION_TYPE } from "../reducer"
 
 export interface ACTION {
    type:  DATA_ACTION_TYPE | DIALOG_ACTION_TYPE;

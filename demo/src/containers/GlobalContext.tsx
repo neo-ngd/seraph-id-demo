@@ -1,6 +1,6 @@
 import { useReducer, createContext, Dispatch } from "react";
 import React from "react";
-import { dataReducer, DataInitialState, init, DataState, DialogState, DialogInitialState, dialogReducer } from "./reducer";
+import { dataReducer, DataInitialState, init, DataState, DialogState, DialogInitialState, dialogReducer } from "../reducer";
 import { ACTION } from "./action";
 import { useCombinedReducers } from './hooks';
 

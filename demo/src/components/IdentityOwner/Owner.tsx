@@ -15,6 +15,7 @@ import Header from './OwnerHeader';
 import { DIDNetwork } from '@sbc/seraph-id-sdk';
 import { GlobalContext } from 'containers/GlobalContext';
 import { changeAction, nextTip, openDialog, closeDialog } from 'containers/action';
+import { useStepActions } from 'containers/hooks';
 
 const OWNER_GOV_BTN_LABEL = 'Apply for Passport';
 const OWNER_AGENCY_BTN_LABEL = 'Book a flat';
@@ -34,13 +35,7 @@ export const Owner = React.memo(function () {
         }
     } = state;
 
-    function _changeAction(agent: string, newContext: string) {
-        dispatch(changeAction(agent, newContext))
-    }
-
-    function _nextTip(newTip: string) {
-        dispatch(nextTip(newTip))
-    }
+    const { _changeAction, _nextTip } = useStepActions();
 
     function _openDialog(type: string) {
         if (type === 'DID') {
