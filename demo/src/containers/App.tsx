@@ -18,10 +18,16 @@ import { useLocation } from 'react-router';
 
 export const RouterComponent = withRouter(({history}) => {
   const { dispatch } = useContext(GlobalContext);
-  history.listen(() => {
-    dispatch({
-      type: 'SHOW_TIP'
-    })
+  history.listen(({pathname}) => {
+    if (pathname === '/help' || pathname === '/') {
+      dispatch({
+        type: 'CLOSE_TIP'
+      })
+    } else {
+      dispatch({
+        type: 'SHOW_TIP'
+      })
+    }
   })
 
   let location = useLocation();

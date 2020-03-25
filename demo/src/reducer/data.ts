@@ -15,7 +15,7 @@ export interface DataState {
 
 export const DataInitialState: DataState = {
   tip: initialTip,
-  showTip: true,
+  showTip: false,
   showHelp: false,
   actions: initialActions,
   passportClaim: null,
