@@ -1,10 +1,9 @@
 // Copyright (c) 2019 Swisscom Blockchain AG
 // Licensed under MIT License
 
-import { DIDNetwork } from '@sbc/seraph-id-sdk'
+import { DIDNetwork } from '@justin_jin/seraph-id-sdk'
 
 export const NEO_RPC_URL = 'https://demo.seraphid.io/rpc';
-export const NEOSCAN_URL = 'https://demo.seraphid.io/api';
 export const DID_NETWORK = DIDNetwork.PrivateNet;
 
 export const GOVERNMENT_SCRIPT_HASH = 'b4eeeb80d20bfb38b23001d0659ce0c1d96be0aa';

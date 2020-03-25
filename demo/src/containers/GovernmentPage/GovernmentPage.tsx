@@ -14,7 +14,7 @@ import PassportRequests, { PassportReq, PassportStatus } from 'components/Passpo
 import uuid from 'uuid/v1';
 
 // Import from seraph-id-sdk 
-import { SeraphIDIssuer } from '@sbc/seraph-id-sdk';
+import { SeraphIDIssuer } from '@justin_jin/seraph-id-sdk';
 import * as configs from 'configs';
 import { GlobalContext } from 'containers/GlobalContext';
 import { GovernmentBar } from './GovermentBar';
@@ -369,7 +369,7 @@ export const GovernmentPage = React.memo(({isAdmin}: Props) =>  {
     function issueCredential (request: PassportReq) {
 
         _changeAction('govPageAsGov', 'issuing');
-        const govIssuer = new SeraphIDIssuer(configs.GOVERNMENT_SCRIPT_HASH, configs.NEO_RPC_URL, configs.NEOSCAN_URL, configs.DID_NETWORK)
+        const govIssuer = new SeraphIDIssuer(configs.GOVERNMENT_SCRIPT_HASH, configs.NEO_RPC_URL, configs.DID_NETWORK)
         const ownerDID = localStorage.getItem('ownerDID');
 
         const claimID = uuid();

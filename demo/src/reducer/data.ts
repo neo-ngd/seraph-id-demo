@@ -1,4 +1,4 @@
-import { SeraphIDWallet } from "@sbc/seraph-id-sdk";
+import { SeraphIDWallet } from "@justin_jin/seraph-id-sdk";
 import { initialTip, initialActions } from "application-context";
 import { Reducer } from "react";
 

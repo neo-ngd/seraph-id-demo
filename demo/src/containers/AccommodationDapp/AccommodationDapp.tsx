@@ -19,10 +19,9 @@ import uuid from 'uuid/v1';
 
 
 // Import from seraph-id-sdk 
-import { SeraphIDIssuer, SeraphIDVerifier } from '@sbc/seraph-id-sdk';
+import { SeraphIDIssuer, SeraphIDVerifier, IClaim } from '@justin_jin/seraph-id-sdk';
 import * as configs from 'configs';
 import { GlobalContext } from 'containers/GlobalContext';
-import { changeAction, nextTip } from 'containers/action';
 import { useStepActions } from 'containers/hooks';
 
 interface Props {
@@ -43,11 +42,11 @@ export function AccommodationDapp({isAdmin}: Props) {
 
         _changeAction('agencyPageAsAgency', 'verifying');
 
-        const agencyVerifier = new SeraphIDVerifier(configs.GOVERNMENT_SCRIPT_HASH, configs.NEO_RPC_URL, configs.NEOSCAN_URL, configs.DID_NETWORK);
+        const agencyVerifier = new SeraphIDVerifier(configs.GOVERNMENT_SCRIPT_HASH, configs.NEO_RPC_URL, configs.DID_NETWORK);
         console.log('passport Claim to Verify: ', passportClaim);
 
         if (passportClaim) {
-            agencyVerifier.validateClaim(passportClaim, (passportClaim) => passportValidationFunc(passportClaim)).then(
+            agencyVerifier.validateClaim(passportClaim, (passportClaim: IClaim) => passportValidationFunc(passportClaim)).then(
                 (res: any) => {
                     console.log('validateClaim RES: ', res);
                     if (res) {
@@ -161,7 +160,7 @@ export function AccommodationDapp({isAdmin}: Props) {
 
         _changeAction('agencyPageAsAgency', 'credIssuing');
 
-        const agencyIssuer = new SeraphIDIssuer(configs.AGENCY_SCRIPT_HASH, configs.NEO_RPC_URL, configs.NEOSCAN_URL, configs.DID_NETWORK);
+        const agencyIssuer = new SeraphIDIssuer(configs.AGENCY_SCRIPT_HASH, configs.NEO_RPC_URL, configs.DID_NETWORK);
         const ownerDID = localStorage.getItem('ownerDID');
         const flatAddress = localStorage.getItem('flatLocation');
         const flatId = localStorage.getItem('flatId');

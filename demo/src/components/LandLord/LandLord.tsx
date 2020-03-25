@@ -7,7 +7,7 @@ import VpnKeyIcon from '@material-ui/icons/VpnKey';
 import { Agents } from '../../application-context';
 
 // Import from seraph-id-sdk 
-import { SeraphIDVerifier } from '@sbc/seraph-id-sdk';
+import { SeraphIDVerifier } from '@justin_jin/seraph-id-sdk';
 import * as configs from 'configs';
 import { useContext } from 'react';
 import { GlobalContext } from 'containers/GlobalContext';
@@ -72,7 +72,7 @@ function LandLord() {
 
         _changeAction('demoLandlord', 'verifying');
 
-        const landLordVerifier = new SeraphIDVerifier(configs.AGENCY_SCRIPT_HASH, configs.NEO_RPC_URL, configs.NEOSCAN_URL, configs.DID_NETWORK);
+        const landLordVerifier = new SeraphIDVerifier(configs.AGENCY_SCRIPT_HASH, configs.NEO_RPC_URL, configs.DID_NETWORK);
         console.log('access key Claim to Verify: ', accessKeyClaim);
 
         if (accessKeyClaim) {

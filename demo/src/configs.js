@@ -2,9 +2,8 @@
 // Copyright (c) 2019 Swisscom Blockchain AG
 // Licensed under MIT License
 exports.__esModule = true;
-var seraph_id_sdk_1 = require("@sbc/seraph-id-sdk");
+var seraph_id_sdk_1 = require("@justin_jin/seraph-id-sdk");
 exports.NEO_RPC_URL = 'https://demo.seraphid.io/rpc';
-exports.NEOSCAN_URL = 'https://demo.seraphid.io/api';
 exports.DID_NETWORK = seraph_id_sdk_1.DIDNetwork.PrivateNet;
 exports.GOVERNMENT_SCRIPT_HASH = 'b4eeeb80d20bfb38b23001d0659ce0c1d96be0aa';
 exports.AGENCY_SCRIPT_HASH = 'a576ca22bb406a8597f8b0d5e62e52ced4d0bbdf';

@@ -12,7 +12,7 @@ import CodeIcon from '@material-ui/icons/Code';
 import Header from './OwnerHeader';
 
 // Import from seraph-id-sdk 
-import { DIDNetwork } from '@sbc/seraph-id-sdk';
+import { DIDNetwork } from '@justin_jin/seraph-id-sdk';
 import { GlobalContext } from 'containers/GlobalContext';
 import { changeAction, nextTip, openDialog, closeDialog } from 'containers/action';
 import { useStepActions } from 'containers/hooks';
