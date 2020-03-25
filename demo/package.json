@@ -27,6 +27,7 @@
     "react-router": "^5.0.0",
     "react-router-dom": "^5.0.0",
     "react-scripts": "3.0.0",
+    "react-transition-group": "^4.3.0",
     "typescript": "^3.5.2",
     "uuid": "^3.3.2"
   },
@@ -34,7 +35,8 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "start:https": "set HTTPS=true&&npm start"
   },
   "eslintConfig": {
     "extends": "react-app"
