@@ -1,73 +1,135 @@
 // Copyright (c) 2019 Swisscom Blockchain AG
 // Licensed under MIT License
 
-import React, {useContext} from 'react';
+import React from 'react';
 import './App.css';
 import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles';
-import { BrowserRouter, Switch, Route, withRouter } from 'react-router-dom';
+import { BrowserRouter, Switch, Route } from 'react-router-dom';
 
+import { ApplicationContext, initialActions, initialTip } from '../application-context';
 import Dashboard from './Dashboard/Dashboard';
 import HelpPage from './HelpPage/HelpPage';
 import GovernmentPage from './GovernmentPage/GovernmentPage';
 import AccommodationDapp from './AccommodationDapp/AccommodationDapp';
-import { Global, GlobalContext } from './GlobalContext';
-import { CodeDialog } from 'components/Dialog/CodeDialog';
-import { UserTips } from 'components/UserTips/UserTips';
-import { TransitionGroup, CSSTransition } from 'react-transition-group';
-import { useLocation } from 'react-router';
 
-export const RouterComponent = withRouter(({history}) => {
-  const { dispatch } = useContext(GlobalContext);
-  history.listen(() => {
-    dispatch({
-      type: 'SHOW_TIP'
-    })
-  })
+// Import from seraph-id-sdk 
+import { SeraphIDWallet } from '@sbc/seraph-id-sdk';
 
-  let location = useLocation();
 
-  return (
-    <TransitionGroup>
-      <CSSTransition
-        key={location.key}
-        classNames="fade"
-        timeout={500}
-      >
-        <Switch location={location}>
-          <Route path="/" exact render={() => <HelpPage help={false}/>}/>
-          <Route path="/help" exact render={() => <HelpPage help={true} />} />
-          <Route path="/dashboard" exact render={() => <Dashboard />} />
-          <Route path="/government" exact render={() => <GovernmentPage isAdmin={false} />} />
-          <Route path="/governmentAdmin" exact render={() => <GovernmentPage isAdmin={true} />} />
-          <Route path="/accommodation" exact render={() => <AccommodationDapp isAdmin={false} />} />
-          <Route path="/accommodationAdmin" exact render={() => <AccommodationDapp isAdmin={true} />} />
-        </Switch>
-      </CSSTransition>
-    </TransitionGroup>
-  )
-});
+interface Props { }
 
-export const App = () => {
-  return (
-    <Global>
+interface State {
+  afterReset: boolean,
+  tip: string
+  showHelp: boolean,
+  actions: any;
+  passportClaim: any;
+  accessKeyClaim: any;
+  changeAction: any;
+  nextTip: any;
+  resetContext: any;
+  contract: any,
+  ownerWallet: any
+}
+
+export class App extends React.Component<Props, State> {
+  public state: State = {
+    afterReset: false,
+    tip: initialTip,
+    showHelp: false,
+    actions: {},
+    passportClaim: null,
+    accessKeyClaim: null,
+    changeAction: null,
+    nextTip: null,
+    resetContext: null,
+    contract: null,
+    ownerWallet: null
+  };
+
+  componentDidMount() {
+
+    const ownerWallet = new SeraphIDWallet({ name: "ownerWallet" });
+    this.setState({ ownerWallet: ownerWallet });
+
+    const actions = initialActions;
+    const actionEntries = Object.entries(actions);
+
+    for (let actionEntry of actionEntries) {
+      const storedAction = localStorage.getItem(actionEntry[0]);
+      if (storedAction) {
+        actionEntry[1] = storedAction;
+      }
+    }
+    const storedActions = Object.assign({}, ...Array.from(actionEntries, ([k, v]) => ({ [k]: v })));
+
+    const storedTip = localStorage.getItem('tip');
+    let tip = initialTip;
+    if (storedTip) {
+      tip = storedTip;
+    }
+
+    this.setState({
+      afterReset: false,
+      tip: tip,
+      actions: storedActions,
+      passportClaim: null,
+      accessKeyClaim: null,
+      changeAction: this.changeAction,
+      nextTip: this.nextTip,
+      resetContext: this.resetContext
+    });
+  }
+
+  changeAction = (agent: string, newContext: string) => {
+
+    localStorage.setItem(agent, newContext);
+    const stateCopy = { ...this.state };
+    const newActions = stateCopy.actions;
+    newActions[agent] = newContext;
+    this.setState({ actions: newActions });
+  };
+
+  nextTip = (newTip: string) => {
+
+    localStorage.setItem('tip', newTip);
+    this.setState({ tip: newTip });
+  };
+
+  resetContext = (afterReset: boolean) => {
+    this.setState({ afterReset: afterReset });
+  }
+
+  public render() {
+
+    return (
       <BrowserRouter>
+
         <MuiThemeProvider theme={theme}>
-          <RouterComponent></RouterComponent>
-          <UserTips />
-          <CodeDialog></CodeDialog>
+          <ApplicationContext.Provider value={this.state}>
+
+            <Switch>
+              <Route path="/" exact render={() => <HelpPage help={false} afterReset={false} />} />
+              <Route path="/help" exact render={() => <HelpPage help={true} afterReset={this.state.afterReset} />} />
+              <Route path="/dashboard" exact render={() => <Dashboard ownerWallet={this.state.ownerWallet} />} />
+              <Route path="/government" exact render={() => <GovernmentPage ownerWallet={this.state.ownerWallet} isAdmin={false} />} />
+              <Route path="/governmentAdmin" exact render={() => <GovernmentPage ownerWallet={this.state.ownerWallet} isAdmin={true} />} />
+              <Route path="/accommodation" exact render={() => <AccommodationDapp ownerWallet={this.state.ownerWallet} isAdmin={false} />} />
+              <Route path="/accommodationAdmin" exact render={() => <AccommodationDapp ownerWallet={this.state.ownerWallet} isAdmin={true} />} />
+            </Switch>
+
+          </ApplicationContext.Provider>
         </MuiThemeProvider>
+
       </BrowserRouter>
-    </Global>
-  );
+    );
+  }
 }
 
 export default App;
 
 
 export const theme = createMuiTheme({
-  typography: {
-    useNextVariants: true,
-  },
   palette: {
     primary: {
       main: '#58BF00',

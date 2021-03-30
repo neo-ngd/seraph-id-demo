@@ -1,36 +1,56 @@
 // Copyright (c) 2019 Swisscom Blockchain AG
 // Licensed under MIT License
 
-import React, { useState, useContext } from 'react';
+import * as React from 'react';
 import './UserTips.css';
 import { Snackbar } from '@material-ui/core';
 import InfoIcon from '@material-ui/icons/InfoOutlined';
-import { GlobalContext } from 'containers/GlobalContext';
+import { ApplicationContext } from '../../application-context';
 
-export const UserTips = React.memo(() => {
-    const { state: { data: { tip, showTip }}, dispatch } = useContext(GlobalContext);
-    const handleClose = () => {
-        dispatch({
-            type: 'CLOSE_TIP'
-        })
+interface Props {
+    location?: string
+}
+interface State {
+    open: boolean;
+}
+
+
+export class UserTips extends React.Component<Props, State> {
+
+    public state: State = {
+        open: true
+    };
+
+    handleClose = () => {
+        this.setState({ open: false });
     }
-    return (
-                <Snackbar
-                    onClick={handleClose}
-                    anchorOrigin={{
-                        vertical: 'bottom',
-                        horizontal: 'center',
-                    }}
-                    open={showTip}
-                    message={
-                        <span
-                            className="UserTipContent">
-                            <InfoIcon className="TipInfoIcon" />
-                            {tip}
-                        </span>
-                    }
-                />
-    );
-});
+
+    public render() {
+
+        return (
+            <ApplicationContext.Consumer>
+                {(value: any) => (
+                    <Snackbar
+                        onClick={this.handleClose}
+                        anchorOrigin={{
+                            vertical: 'bottom',
+                            horizontal: 'center',
+                        }}
+                        open={this.state.open}
+                        message={
+                            <span
+                                className="UserTipContent">
+                                <InfoIcon className="TipInfoIcon" />
+                                {value.tip}
+                            </span>
+                        }
+                    />
+                )}
+            </ApplicationContext.Consumer>
+        );
+
+    }
+
+}
 
 export default UserTips;

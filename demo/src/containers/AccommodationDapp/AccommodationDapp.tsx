@@ -1,7 +1,7 @@
 // Copyright (c) 2019 Swisscom Blockchain AG
 // Licensed under MIT License
 
-import React, { useState, useContext } from 'react';
+import React from 'react';
 import './AccommodationDapp.css';
 import { Link } from 'react-router-dom';
 import { AppBar, Toolbar, Typography, IconButton, Tooltip, Fab, CircularProgress } from '@material-ui/core';
@@ -10,6 +10,7 @@ import ActiveAgent from 'components/ActiveAgent/ActiveAgent';
 import { Agents } from '../../application-context';
 import CloseIcon from '@material-ui/icons/Close';
 import { theme } from '../App';
+import { ApplicationContext } from '../../application-context';
 import UserTips from 'components/UserTips/UserTips';
 import FlatCards from 'components/FlatCards/FlatCards';
 import HelpIcon from '@material-ui/icons/HelpOutline';
@@ -21,60 +22,69 @@ import uuid from 'uuid/v1';
 // Import from seraph-id-sdk 
 import { SeraphIDIssuer, SeraphIDVerifier } from '@sbc/seraph-id-sdk';
 import * as configs from 'configs';
-import { GlobalContext } from 'containers/GlobalContext';
-import { changeAction, nextTip } from 'containers/action';
-import { useStepActions } from 'containers/hooks';
+
+
+interface Flat {
+    city: string;
+    price: string;
+}
 
 interface Props {
     isAdmin: boolean;
+    ownerWallet: any;
+}
+interface State {
+    chosenFlat: Flat;
 }
 
-export function AccommodationDapp({isAdmin}: Props) {
-    const [, setChosenFlat] = useState({ city: '', price: '' })
-    const themeColor = theme.palette.error.main;
-    const style = { backgroundColor: themeColor, color: 'white' };
-    const spinnerStyle = { color: themeColor };
+export class AccommodationDapp extends React.Component<Props, State> {
 
-    const { state: { data: {ownerWallet, passportClaim, actions}} } = useContext(GlobalContext);
-    const { _changeAction, _nextTip } = useStepActions();
+    public state: State = {
+        chosenFlat: { city: '', price: '' }
+    };
+
+    public themeColor = theme.palette.error.main;
+    public style = { backgroundColor: this.themeColor, color: 'white' };
+    public spinnerStyle = { color: this.themeColor };
 
 
-    function verifyDigitalIdentity() {
+    verifyDigitalIdentity = (value: any) => {
 
-        _changeAction('agencyPageAsAgency', 'verifying');
+        value.changeAction('agencyPageAsAgency', 'verifying');
 
-        const agencyVerifier = new SeraphIDVerifier(configs.GOVERNMENT_SCRIPT_HASH, configs.NEO_RPC_URL, configs.NEOSCAN_URL, configs.DID_NETWORK);
-        console.log('passport Claim to Verify: ', passportClaim);
+        const agencyVerifier = new SeraphIDVerifier(configs.GOVERNMENT_SCRIPT_HASH, configs.NEO_RPC_URL, configs.DID_NETWORK, configs.MAGIC);
+        const passportClaim = value.passportClaim;
+        console.log('passport Claim to Verify: ', value.passportClaim);
 
         if (passportClaim) {
-            agencyVerifier.validateClaim(passportClaim, (passportClaim) => passportValidationFunc(passportClaim)).then(
+            agencyVerifier.validateClaim(passportClaim, (passportClaim) => this.passportValidationFunc(passportClaim)).then(
                 (res: any) => {
                     console.log('validateClaim RES: ', res);
                     if (res) {
                         setTimeout(() => {
-                            _nextTip(`As ${Agents.smartAgency}, issue the Access Key of the booked accomodation to ${Agents.owner}`);
+                            value.nextTip(`As ${Agents.smartAgency}, issue the Access Key of the booked accomodation to ${Agents.owner}`);
 
-                            _changeAction('agencyPageAsOwner', 'waitingForAccessKey');
-                            _changeAction('agencyPageAsAgency', 'digitalIdentityVerified');
-                            _changeAction('demoOwnerCredFromAgency', 'waiting');
-                            _changeAction('demoAgency', 'digitalIdentityVerified');
+                            value.changeAction('agencyPageAsOwner', 'waitingForAccessKey');
+                            value.changeAction('agencyPageAsAgency', 'digitalIdentityVerified');
+                            value.changeAction('demoOwnerCredFromAgency', 'waiting');
+                            value.changeAction('demoAgency', 'digitalIdentityVerified');
                         }, 2000);
                     } else {
-                        handleVerifyingFailure();
+                        this.handleVerifyingFailure(value);
                     }
                 }
             ).catch((err: any) => {
                 console.error('validateClaim ERR: ', err);
-                handleVerifyingFailure();
+                this.handleVerifyingFailure(value);
             });
         } else {
             console.log('error getting passport claim');
-            handleVerifyingFailure();
+            this.handleVerifyingFailure(value);
         }
 
     }
 
-    function passportValidationFunc (passportClaim: any) {
+    passportValidationFunc = (passportClaim: any) => {
         let validated = false;
         const birthDate = passportClaim.attributes.birthDate;
         if (birthDate) {
@@ -87,81 +97,83 @@ export function AccommodationDapp({isAdmin}: Props) {
         return validated;
     }
 
-    function handleVerifyingFailure () {
-        _nextTip(`${Agents.owner} can not book a flat without a verified Digital Passport. Go back to the Help Page, click the reset button and try again!!!`);
+    handleVerifyingFailure = (value: any) => {
+        value.nextTip(`${Agents.owner} can not book a flat without a verified Digital Passport. Go back to the Help Page, click the reset button and try again!!!`);
 
-        _changeAction('agencyPageAsOwner', 'digitalIdentityNotVerified');
-        _changeAction('agencyPageAsAgency', 'digitalIdentityNotVerified');
-        _changeAction('demoOwnerCredFromAgency', 'failure');
-        _changeAction('demoAgency', 'digitalIdentityNotVerified');
+        value.changeAction('agencyPageAsOwner', 'digitalIdentityNotVerified');
+        value.changeAction('agencyPageAsAgency', 'digitalIdentityNotVerified');
+        value.changeAction('demoOwnerCredFromAgency', 'failure');
+        value.changeAction('demoAgency', 'digitalIdentityNotVerified');
     }
 
-    function agencyRequestCredentials (id: number, city?: string, price?: string) {
+    agencyRequestCredentials = (value: any, id: number, city?: string, price?: string) => {
 
         if (city && price) {
             const flat = { city: city, price: price };
             localStorage.setItem('flatId', `${id}`);
             localStorage.setItem('flatLocation', city);
             localStorage.setItem('price', price);
-            setChosenFlat(flat);
+            this.setState({ chosenFlat: flat });
         }
 
-        _changeAction('agencyPageAsOwner', 'requestingDigitalIdentity');
-        if (actions.demoOwnerCredFromGov === 'success') {
-            _nextTip(`As ${Agents.owner}, share your digital Passport with ${Agents.smartAgency}`);
+        value.changeAction('agencyPageAsOwner', 'requestingDigitalIdentity');
+        if (value.actions.demoOwnerCredFromGov === 'success') {
+            value.nextTip(`As ${Agents.owner}, share your digital Passport with ${Agents.smartAgency}`);
         }
 
         setTimeout(() => {
-            _changeAction('agencyPageAsOwner', 'toShareDigitalIdentity');
+            value.changeAction('agencyPageAsOwner', 'toShareDigitalIdentity');
         }, 5000);
 
     }
 
-    function shareCredentials () {
+    shareCredentials = (value: any) => {
 
-        _changeAction('agencyPageAsOwner', 'sharingCredentials');
+        value.changeAction('agencyPageAsOwner', 'sharingCredentials');
 
         const passportClaimID = localStorage.getItem('passportClaimID');
         if (passportClaimID) {
-            const passportClaim = ownerWallet!.getClaim(passportClaimID);
+            const passportClaim = this.props.ownerWallet.getClaim(passportClaimID);
 
             if (passportClaim) {
+                value.passportClaim = passportClaim;
+
                 console.log('passport Claim from Owner Wallet', passportClaim);
 
-                _nextTip(`As ${Agents.smartAgency}, you need to verify the identity of ${Agents.owner} from your Web Page`);
+                value.nextTip(`As ${Agents.smartAgency}, you need to verify the identity of ${Agents.owner} from your Web Page`);
 
-                _changeAction('agencyPageAsOwner', 'waitingForValidation');
-                _changeAction('agencyPageAsAgency', 'pendingRequest');
-                _changeAction('demoOwnerCredFromAgency', 'waiting');
-                _changeAction('demoAgency', 'pendingRequest');
+                value.changeAction('agencyPageAsOwner', 'waitingForValidation');
+                value.changeAction('agencyPageAsAgency', 'pendingRequest');
+                value.changeAction('demoOwnerCredFromAgency', 'waiting');
+                value.changeAction('demoAgency', 'pendingRequest');
 
             } else {
-                _changeAction('agencyPageAsOwner', 'digitalIdentityNotFound');
+                value.changeAction('agencyPageAsOwner', 'digitalIdentityNotFound');
             }
         } else {
-            _changeAction('agencyPageAsOwner', 'digitalIdentityNotFound');
+            value.changeAction('agencyPageAsOwner', 'digitalIdentityNotFound');
         }
 
     }
 
-    function doNotShareCredentials () {
+    doNotShareCredentials = (value: any) => {
 
-        if (actions.demoOwnerCredFromGov === 'success') {
-            _nextTip(`Play as ${Agents.owner} and choose an accommodation from the ${Agents.smartAgency} Web Page.`);
+        if (value.actions.demoOwnerCredFromGov === 'success') {
+            value.nextTip(`Play as ${Agents.owner} and choose an accommodation from the ${Agents.smartAgency} Web Page.`);
         }
 
-        _changeAction('agencyPageAsOwner', 'toChooseAFlat');
-        _changeAction('agencyPageAsAgency', 'noRequests');
-        _changeAction('demoOwnerCredFromAgency', 'todo');
-        _changeAction('demoAgency', 'noRequests');
+        value.changeAction('agencyPageAsOwner', 'toChooseAFlat');
+        value.changeAction('agencyPageAsAgency', 'noRequests');
+        value.changeAction('demoOwnerCredFromAgency', 'todo');
+        value.changeAction('demoAgency', 'noRequests');
 
     }
 
-    function issueAccesskey () {
+    issueAccesskey = (value: any) => {
 
-        _changeAction('agencyPageAsAgency', 'credIssuing');
+        value.changeAction('agencyPageAsAgency', 'credIssuing');
 
-        const agencyIssuer = new SeraphIDIssuer(configs.AGENCY_SCRIPT_HASH, configs.NEO_RPC_URL, configs.NEOSCAN_URL, configs.DID_NETWORK);
+        const agencyIssuer = new SeraphIDIssuer(configs.AGENCY_SCRIPT_HASH, configs.NEO_RPC_URL, configs.DID_NETWORK, configs.MAGIC);
         const ownerDID = localStorage.getItem('ownerDID');
         const flatAddress = localStorage.getItem('flatLocation');
         const flatId = localStorage.getItem('flatId');
@@ -186,120 +198,120 @@ export function AccommodationDapp({isAdmin}: Props) {
                     console.log('issueClaimID RES', res.id);
 
                     try {
-                        ownerWallet!.addClaim(res);
-                        const addedClaim = ownerWallet!.getClaim(res.id);
+                        this.props.ownerWallet.addClaim(res);
+                        const addedClaim = this.props.ownerWallet.getClaim(res.id);
                         console.log('claim Added to the Wallet: ', addedClaim);
 
                         localStorage.setItem('accessKeyClaimID', res.id);
                         localStorage.setItem('accessKeyClaim', JSON.stringify(res));
 
-                        _nextTip(`Play as ${Agents.owner} and try to open the door with the access key you just got. `);
+                        value.nextTip(`Play as ${Agents.owner} and try to open the door with the access key you just got. `);
 
-                        _changeAction('agencyPageAsOwner', 'success');
-                        _changeAction('agencyPageAsAgency', 'credIssued');
-                        _changeAction('demoOwnerCredFromAgency', 'success');
-                        _changeAction('demoAgency', 'credIssued');
+                        value.changeAction('agencyPageAsOwner', 'success');
+                        value.changeAction('agencyPageAsAgency', 'credIssued');
+                        value.changeAction('demoOwnerCredFromAgency', 'success');
+                        value.changeAction('demoAgency', 'credIssued');
                     }
                     catch (err) {
                         console.error('issueClaim ERR', err);
-                        handleCredIssuingError();
+                        this.handleCredIssuingError(value);
                     }
 
                 }, 2000);
             }
         ).catch(err => {
             console.error('issueClaim ERR', err);
-            handleCredIssuingError();
+            this.handleCredIssuingError(value);
         });
     }
 
-    function handleCredIssuingError () {
-        _changeAction('agencyPageAsAgency', 'errorIssuingCred');
-        handleFailure();
+    handleCredIssuingError = (value: any) => {
+        value.changeAction('agencyPageAsAgency', 'errorIssuingCred');
+        this.handleFailure(value);
 
     }
 
 
-    function doNotIssueAccesskey () {
-        _changeAction('agencyPageAsAgency', 'credNotIssued');
-        handleFailure();
+    doNotIssueAccesskey = (value: any) => {
+        value.changeAction('agencyPageAsAgency', 'credNotIssued');
+        this.handleFailure(value);
     }
 
-    function handleFailure () {
-        _nextTip(`${Agents.owner} can not book a flat without an access key. Go back to the Help Page, click the reset button and try again!!!`);
+    handleFailure = (value: any) => {
+        value.nextTip(`${Agents.owner} can not book a flat without an access key. Go back to the Help Page, click the reset button and try again!!!`);
 
-        _changeAction('agencyPageAsOwner', 'failure');
-        _changeAction('demoOwnerCredFromAgency', 'failure');
-        _changeAction('demoAgency', 'credNotIssued');
+        value.changeAction('agencyPageAsOwner', 'failure');
+        value.changeAction('demoOwnerCredFromAgency', 'failure');
+        value.changeAction('demoAgency', 'credNotIssued');
 
     }
 
-    function renderContentForOwner () {
+    renderContentForOwner = (value: any) => {
 
-        if (actions.agencyPageAsOwner === 'toChooseAFlat') {
+        if (value.actions.agencyPageAsOwner === 'toChooseAFlat') {
             return (
-                <FlatCards flatBooked={(id: number, city: string, price: string) => agencyRequestCredentials(id, city, price)} />
+                <FlatCards flatBooked={(id: number, city: string, price: string) => this.agencyRequestCredentials(value, id, city, price)} />
             );
-        } else if (actions.agencyPageAsOwner === 'requestingDigitalIdentity') {
+        } else if (value.actions.agencyPageAsOwner === 'requestingDigitalIdentity') {
             return (
                 <div className="PageContainer">
                     <h1> Requesting credentials </h1>
-                    <CircularProgress style={spinnerStyle} />
+                    <CircularProgress style={this.spinnerStyle} />
                 </div>
             );
-        } else if (actions.agencyPageAsOwner === 'errorRequestingDigitalIdentity') {
+        } else if (value.actions.agencyPageAsOwner === 'errorRequestingDigitalIdentity') {
             return (
                 <div className="PageContainer">
                     <h1> Error occurred while requesting credentials. </h1>
                 </div>
             );
 
-        } else if (actions.agencyPageAsOwner === 'toShareDigitalIdentity') {
+        } else if (value.actions.agencyPageAsOwner === 'toShareDigitalIdentity') {
             return (
                 <div className="PageContainer">
                     <h1> You need to share your digital Passport in order to book the flat. </h1>
-                    <Fab variant="extended" style={style} onClick={() => { doNotShareCredentials() }}> Don't Share </Fab>
-                    <Fab variant="extended" style={style} className="RightButton" onClick={() => { shareCredentials() }}> Share credential </Fab>
+                    <Fab variant="extended" style={this.style} onClick={() => { this.doNotShareCredentials(value) }}> Don't Share </Fab>
+                    <Fab variant="extended" style={this.style} className="RightButton" onClick={() => { this.shareCredentials(value) }}> Share credential </Fab>
                 </div>
             );
-        } else if (actions.agencyPageAsOwner === 'sharingCredentials') {
+        } else if (value.actions.agencyPageAsOwner === 'sharingCredentials') {
             return (
                 <div className="PageContainer">
                     <h1> Sharing credentials </h1>
-                    <CircularProgress style={spinnerStyle} />
+                    <CircularProgress style={this.spinnerStyle} />
                 </div>
             );
-        } else if (actions.agencyPageAsOwner === 'digitalIdentityNotFound') {
+        } else if (value.actions.agencyPageAsOwner === 'digitalIdentityNotFound') {
             return (
                 <div className="PageContainer">
                     <h1> Passport not found in your wallet. </h1>
                 </div>
             );
-        } else if (actions.agencyPageAsOwner === 'waitingForValidation') {
+        } else if (value.actions.agencyPageAsOwner === 'waitingForValidation') {
             return (
                 <div className="PageContainer">
                     <h1> Request successfully forwarded to the Agency. </h1>
                 </div>
             );
-        } else if (actions.agencyPageAsOwner === 'digitalIdentityNotVerified') {
+        } else if (value.actions.agencyPageAsOwner === 'digitalIdentityNotVerified') {
             return (
                 <div className="PageContainer">
                     <h1> Digital Passport not successfully verified from the {Agents.smartAgency}. </h1>
                 </div>
             );
-        } else if (actions.agencyPageAsOwner === 'waitingForAccessKey') {
+        } else if (value.actions.agencyPageAsOwner === 'waitingForAccessKey') {
             return (
                 <div className="PageContainer">
                     <h1> Request successfully forwarded to the Agency. </h1>
                 </div>
             );
-        } else if (actions.agencyPageAsOwner === 'success') {
+        } else if (value.actions.agencyPageAsOwner === 'success') {
             return (
                 <div className="PageContainer">
                     <h1> Credentials successfully got from {Agents.smartAgency}. </h1>
                 </div>
             );
-        } else if (actions.agencyPageAsOwner === 'failure') {
+        } else if (value.actions.agencyPageAsOwner === 'failure') {
             return (
                 <div className="PageContainer">
                     <h1> {Agents.smartAgency} denied to issue the access key. It's not possible to book a flat. </h1>
@@ -309,36 +321,36 @@ export function AccommodationDapp({isAdmin}: Props) {
     }
 
 
-    function renderContentForAgency () {
+    renderContentForAgency = (value: any) => {
 
         const city = localStorage.getItem('flatLocation');
         const price = localStorage.getItem('price');
         const checkIn = moment().format("MMMM Do YYYY");
         const checkOut = moment().add(1, 'days').format("MMMM Do YYYY");
 
-        if (actions.agencyPageAsAgency === 'noRequests') {
+        if (value.actions.agencyPageAsAgency === 'noRequests') {
             return (
                 <div>
                     <AccessKeyRequests />
                 </div>
             );
-        } else if (actions.agencyPageAsAgency === 'pendingRequest') {
+        } else if (value.actions.agencyPageAsAgency === 'pendingRequest') {
             return (
                 <div>
                     <AccessKeyRequests
                         activeRequest={new AccessKeyReq(0, city ? city : '', checkIn, checkOut, price ? price : '', PassportStatus.toVerify, AccessKeyStatus.waitingForPassport)}
-                        verified={() => verifyDigitalIdentity()}
+                        verified={() => this.verifyDigitalIdentity(value)}
                     />
                 </div>
             );
-        } else if (actions.agencyPageAsAgency === 'verifying') {
+        } else if (value.actions.agencyPageAsAgency === 'verifying') {
             return (
                 <div className="PageContainer">
                     <h1> Verifying Passport provided by {Agents.owner}</h1>
-                    <CircularProgress style={spinnerStyle} />
+                    <CircularProgress style={this.spinnerStyle} />
                 </div>
             );
-        } else if (actions.agencyPageAsAgency === 'digitalIdentityNotVerified') {
+        } else if (value.actions.agencyPageAsAgency === 'digitalIdentityNotVerified') {
             return (
                 <div>
                     <AccessKeyRequests
@@ -346,24 +358,24 @@ export function AccommodationDapp({isAdmin}: Props) {
                     />
                 </div>
             );
-        } else if (actions.agencyPageAsAgency === 'digitalIdentityVerified') {
+        } else if (value.actions.agencyPageAsAgency === 'digitalIdentityVerified') {
             return (
                 <div>
                     <AccessKeyRequests
                         activeRequest={new AccessKeyReq(0, city ? city : '', checkIn, checkOut, price ? price : '', PassportStatus.valid, AccessKeyStatus.pending)}
-                        issued={() => issueAccesskey()}
-                        denied={() => doNotIssueAccesskey()}
+                        issued={() => this.issueAccesskey(value)}
+                        denied={() => this.doNotIssueAccesskey(value)}
                     />
                 </div>
             );
-        } else if (actions.agencyPageAsAgency === 'credIssuing') {
+        } else if (value.actions.agencyPageAsAgency === 'credIssuing') {
             return (
                 <div className="PageContainer">
                     <h1> Issuing Access Key to {Agents.owner}</h1>
-                    <CircularProgress style={spinnerStyle} />
+                    <CircularProgress style={this.spinnerStyle} />
                 </div>
             );
-        } else if (actions.agencyPageAsAgency === 'credIssued') {
+        } else if (value.actions.agencyPageAsAgency === 'credIssued') {
             return (
                 <div>
                     <AccessKeyRequests
@@ -371,7 +383,7 @@ export function AccommodationDapp({isAdmin}: Props) {
                     />
                 </div>
             );
-        } else if (actions.agencyPageAsAgency === 'credNotIssued') {
+        } else if (value.actions.agencyPageAsAgency === 'credNotIssued') {
             return (
                 <div>
                     <AccessKeyRequests
@@ -380,7 +392,7 @@ export function AccommodationDapp({isAdmin}: Props) {
                 </div>
 
             );
-        } else if (actions.agencyPageAsAgency === 'errorIssuingCred') {
+        } else if (value.actions.agencyPageAsAgency === 'errorIssuingCred') {
             return (
                 <div>
                     <AccessKeyRequests
@@ -392,20 +404,26 @@ export function AccommodationDapp({isAdmin}: Props) {
 
     }
 
-    function renderContent (agent: string) {
+    renderContent = (value: any, agent: string) => {
         if (agent === Agents.owner) {
-            return renderContentForOwner();
+            return this.renderContentForOwner(value);
         } else {
-            return renderContentForAgency();
+            return this.renderContentForAgency(value);
         }
     }
 
+    public render() {
 
-        let agent = isAdmin? Agents.smartAgency: Agents.owner;
+        let agent = Agents.owner;
+        if (this.props.isAdmin) {
+            agent = Agents.smartAgency;
+        }
 
         return (
+            <ApplicationContext.Consumer>
+                {(value: any) => (
                     <span>
-                        <AppBar position="static" style={style}>
+                        <AppBar position="static" style={this.style}>
                             <Toolbar>
                                 <IconButton color="inherit" aria-label="Menu">
                                     <HomeIcon className="AgencyLogo" />
@@ -433,14 +451,18 @@ export function AccommodationDapp({isAdmin}: Props) {
 
                         <div className="AgencyPageContainer">
                             <ActiveAgent agent={agent} location="AgencyWebPage" />
+                            <UserTips location="AgencyWebPage" />
                             <div className="AgencyPageContent">
-                                {renderContent(agent)}
+                                {this.renderContent(value, agent)}
                             </div>
                         </div>
 
                     </span>
+                )}
+            </ApplicationContext.Consumer>
 
         );
+    }
 
 }
 

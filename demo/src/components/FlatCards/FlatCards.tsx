@@ -38,17 +38,17 @@ function FlatCards({ flatBooked }: Props) {
 
     const renderFlatsInRow = (flats: FlatCard[]) => {
         return flats.map(
-            ({id, pictureRef, city, price, rooms, meters, others}) => {
+            flat => {
                 return (
                     <FlatCard
-                        key={id}
-                        imageRef={pictureRef}
-                        city={city}
-                        price={price}
-                        rooms={rooms}
-                        meters={meters}
-                        others={others}
-                        clicked={() => flatBooked(id, city, price)}
+                        key={flat.id}
+                        imageRef={flat.pictureRef}
+                        city={flat.city}
+                        price={flat.price}
+                        rooms={flat.rooms}
+                        meters={flat.meters}
+                        others={flat.others}
+                        clicked={() => flatBooked(flat.id, flat.city, flat.price)}
                     />
                 );
             }

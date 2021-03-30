@@ -64,6 +64,7 @@ function PassportRequests({ activeRequest, issued, denied }: Props) {
 
     if (activeRequest) {
         requests.unshift(activeRequest);
+
     }
 
     const actions = (req: PassportReq) => {

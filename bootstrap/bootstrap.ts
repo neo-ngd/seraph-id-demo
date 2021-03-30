@@ -2,19 +2,19 @@
 // Copyright (c) 2019 Swisscom Blockchain AG
 // Licensed under MIT License
 
-import { SeraphIDContract, SeraphIDIssuer } from '../demo/node_modules/@sbc/seraph-id-sdk/lib';
+import { SeraphIDIssuerContract, SeraphIDIssuer } from '../demo/node_modules/@sbc/seraph-id-sdk/';
 import * as configs from '../demo/src/configs';
 
 console.log('... Executing bootstrap ... ');
 
 // Contract instances: 
-const govContract = new SeraphIDContract(configs.GOVERNMENT_SCRIPT_HASH, configs.NEO_RPC_URL, configs.NEOSCAN_URL, configs.DID_NETWORK);
-const agencyContract = new SeraphIDContract(configs.AGENCY_SCRIPT_HASH, configs.NEO_RPC_URL, configs.NEOSCAN_URL, configs.DID_NETWORK);
+const govContract = new SeraphIDIssuerContract(configs.GOVERNMENT_SCRIPT_HASH, configs.NEO_RPC_URL, configs.DID_NETWORK, configs.MAGIC);
+const agencyContract = new SeraphIDIssuerContract(configs.AGENCY_SCRIPT_HASH, configs.NEO_RPC_URL, configs.DID_NETWORK, configs.MAGIC);
 
 
 
 // Passport Schema creation
-const govIssuer = new SeraphIDIssuer(configs.GOVERNMENT_SCRIPT_HASH, configs.NEO_RPC_URL, configs.NEOSCAN_URL, configs.DID_NETWORK);
+const govIssuer = new SeraphIDIssuer(configs.GOVERNMENT_SCRIPT_HASH, configs.NEO_RPC_URL, configs.DID_NETWORK, configs.MAGIC);
 
 govIssuer.registerNewSchema(
   configs.PASSPORT_SCHEMA_NAME,
@@ -29,7 +29,7 @@ govIssuer.registerNewSchema(
 
 
 // Access Key Schema creation
-const agencyIssuer = new SeraphIDIssuer(configs.AGENCY_SCRIPT_HASH, configs.NEO_RPC_URL, configs.NEOSCAN_URL, configs.DID_NETWORK);
+const agencyIssuer = new SeraphIDIssuer(configs.AGENCY_SCRIPT_HASH, configs.NEO_RPC_URL, configs.DID_NETWORK, configs.MAGIC);
 agencyIssuer.registerNewSchema(
   configs.ACCESS_KEY_SCHEMA_NAME,
   ['flatId', 'address'],
