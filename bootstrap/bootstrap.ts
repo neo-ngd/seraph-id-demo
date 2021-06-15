@@ -11,8 +11,6 @@ console.log('... Executing bootstrap ... ');
 const govContract = new SeraphIDIssuerContract(configs.GOVERNMENT_SCRIPT_HASH, configs.NEO_RPC_URL, configs.DID_NETWORK, configs.MAGIC);
 const agencyContract = new SeraphIDIssuerContract(configs.AGENCY_SCRIPT_HASH, configs.NEO_RPC_URL, configs.DID_NETWORK, configs.MAGIC);
 
-
-
 // Passport Schema creation
 const govIssuer = new SeraphIDIssuer(configs.GOVERNMENT_SCRIPT_HASH, configs.NEO_RPC_URL, configs.DID_NETWORK, configs.MAGIC);
 
